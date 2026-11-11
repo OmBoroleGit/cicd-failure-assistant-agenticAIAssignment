@@ -1,0 +1,111 @@
+
+{
+  "id": "E",
+  "name": "Ambiguous Pipeline Run with Flaky Test",
+  "scenario_type": "edge",
+  "pipeline_status": {
+    "run_id": "run-2026-1110-005",
+    "branch": "feature/documentation-update",
+    "stages": {
+      "checkout": {
+        "status": "passed",
+        "duration_seconds": 4
+      },
+      "dependency_install": {
+        "status": "passed",
+        "duration_seconds": 16
+      },
+      "build": {
+        "status": "passed",
+        "duration_seconds": 28
+      },
+      "unit_tests": {
+        "status": "failed",
+        "duration_seconds": 43
+      },
+      "deployment": {
+        "status": "skipped",
+        "duration_seconds": 0
+      }
+    }
+  },
+  "build_logs": "[2026-11-10 16:10:01] INFO Checking out branch feature/documentation-update\n[2026-11-10 16:10:05] INFO Dependencies installed successfully\n[2026-11-10 16:10:21] INFO Build completed successfully\n[2026-11-10 16:10:22] INFO Starting unit tests\n[2026-11-10 16:10:31] WARNING DeprecationWarning: legacy API will be removed in a future release\n[2026-11-10 16:10:35] FAILED test_api_timeout.py::test_api_timeout - Request timed out after 5 seconds\n[2026-11-10 16:10:40] INFO Retrying failed test\n[2026-11-10 16:10:44] PASSED test_api_timeout.py::test_api_timeout on retry\n[2026-11-10 16:10:45] WARNING Flaky test detected: test_api_timeout\n[2026-11-10 16:10:46] INFO Final test status: 1 initial failure, 1 retry passed\n[2026-11-10 16:10:47] INFO Pipeline marked unstable",
+  "test_results": {
+    "total": 40,
+    "passed": 40,
+    "failed": 0,
+    "failures": [
+      {
+        "test_name": "test_api_timeout",
+        "file": "test_api_timeout.py",
+        "message": "Request timed out after 5 seconds",
+        "retry_count": 1,
+        "retry_passed": true
+      }
+    ]
+  },
+  "dependencies": {
+    "packages": [
+      {
+        "name": "requests",
+        "required_version": "2.32.0",
+        "resolved_version": "2.32.0",
+        "status": "ok"
+      },
+      {
+        "name": "pytest",
+        "required_version": "8.3.0",
+        "resolved_version": "8.3.0",
+        "status": "ok"
+      }
+    ],
+    "lockfile_changed": false
+  },
+  "recent_changes": [
+    {
+      "commit": "f81a3c2",
+      "files": [
+        "docs/api_usage.md"
+      ],
+      "message": "Update API usage documentation"
+    },
+    {
+      "commit": "b72c4d9",
+      "files": [
+        "README.md"
+      ],
+      "message": "Clarify project setup instructions"
+    }
+  ],
+  "deployment_health": {
+    "overall_status": "not_run",
+    "checks": []
+  },
+  "run_history": [
+    {
+      "run_id": "run-2026-1110-002",
+      "status": "passed",
+      "failed_tests": []
+    },
+    {
+      "run_id": "run-2026-1110-003",
+      "status": "failed",
+      "failed_tests": [
+        "test_api_timeout"
+      ]
+    },
+    {
+      "run_id": "run-2026-1110-004",
+      "status": "passed",
+      "failed_tests": []
+    },
+    {
+      "run_id": "run-2026-1110-005",
+      "status": "unstable",
+      "failed_tests": [
+        "test_api_timeout"
+      ]
+    }
+  ],
+  "expected_category": "AMBIGUOUS"
+}

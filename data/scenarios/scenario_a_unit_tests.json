@@ -1,0 +1,112 @@
+
+{
+  "id": "A",
+  "name": "Unit Tests Fail After Code Change",
+  "scenario_type": "failure",
+  "pipeline_status": {
+    "run_id": "run-2026-1108-001",
+    "branch": "feature/discount-update",
+    "stages": {
+      "checkout": {
+        "status": "passed",
+        "duration_seconds": 4
+      },
+      "dependency_install": {
+        "status": "passed",
+        "duration_seconds": 18
+      },
+      "build": {
+        "status": "passed",
+        "duration_seconds": 32
+      },
+      "unit_tests": {
+        "status": "failed",
+        "duration_seconds": 21
+      },
+      "deployment": {
+        "status": "skipped",
+        "duration_seconds": 0
+      }
+    }
+  },
+  "build_logs": "[2026-11-08 10:14:01] INFO Checking out branch feature/discount-update\n[2026-11-08 10:14:05] INFO Dependencies installed successfully\n[2026-11-08 10:14:23] INFO Build completed successfully\n[2026-11-08 10:14:24] INFO Starting unit tests\n[2026-11-08 10:14:31] FAILED test_discount_calc.py::test_discount_calc - Expected 90.0, received 100.0\n[2026-11-08 10:14:34] FAILED test_discount_calc.py::test_zero_discount - Expected 100.0, received 0.0\n[2026-11-08 10:14:38] FAILED test_discount_calc.py::test_max_discount - Expected 50.0, received 100.0\n[2026-11-08 10:14:45] ERROR 3 tests failed, 47 passed\n[2026-11-08 10:14:46] ERROR Pipeline stopped after unit test failure",
+  "test_results": {
+    "total": 50,
+    "passed": 47,
+    "failed": 3,
+    "failures": [
+      {
+        "test_name": "test_discount_calc",
+        "file": "test_discount_calc.py",
+        "message": "Expected 90.0, received 100.0",
+        "retry_count": 0
+      },
+      {
+        "test_name": "test_zero_discount",
+        "file": "test_discount_calc.py",
+        "message": "Expected 100.0, received 0.0",
+        "retry_count": 0
+      },
+      {
+        "test_name": "test_max_discount",
+        "file": "test_discount_calc.py",
+        "message": "Expected 50.0, received 100.0",
+        "retry_count": 0
+      }
+    ]
+  },
+  "dependencies": {
+    "packages": [
+      {
+        "name": "pytest",
+        "required_version": "8.3.0",
+        "resolved_version": "8.3.0",
+        "status": "ok"
+      },
+      {
+        "name": "numpy",
+        "required_version": "2.1.0",
+        "resolved_version": "2.1.0",
+        "status": "ok"
+      }
+    ],
+    "lockfile_changed": false
+  },
+  "recent_changes": [
+    {
+      "commit": "a81c2f4",
+      "files": [
+        "pricing/discount.py"
+      ],
+      "message": "Update discount calculation logic"
+    },
+    {
+      "commit": "7c9e210",
+      "files": [
+        "tests/test_discount_calc.py"
+      ],
+      "message": "Add discount calculation tests"
+    }
+  ],
+  "deployment_health": {
+    "overall_status": "not_run",
+    "checks": []
+  },
+  "run_history": [
+    {
+      "run_id": "run-2026-1107-004",
+      "status": "passed",
+      "failed_tests": []
+    },
+    {
+      "run_id": "run-2026-1108-001",
+      "status": "failed",
+      "failed_tests": [
+        "test_discount_calc",
+        "test_zero_discount",
+        "test_max_discount"
+      ]
+    }
+  ],
+  "expected_category": "TEST_FAILURE"
+}

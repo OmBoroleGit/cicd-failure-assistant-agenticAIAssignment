@@ -1,0 +1,101 @@
+
+{
+  "id": "D",
+  "name": "Normal Successful Pipeline Run",
+  "scenario_type": "normal",
+  "pipeline_status": {
+    "run_id": "run-2026-1110-004",
+    "branch": "main",
+    "stages": {
+      "checkout": {
+        "status": "passed",
+        "duration_seconds": 4
+      },
+      "dependency_install": {
+        "status": "passed",
+        "duration_seconds": 15
+      },
+      "build": {
+        "status": "passed",
+        "duration_seconds": 27
+      },
+      "unit_tests": {
+        "status": "passed",
+        "duration_seconds": 38
+      },
+      "deployment": {
+        "status": "passed",
+        "duration_seconds": 41
+      }
+    }
+  },
+  "build_logs": "[2026-11-10 14:00:01] INFO Checking out branch main\n[2026-11-10 14:00:05] INFO Dependencies installed successfully\n[2026-11-10 14:00:20] INFO Build completed successfully\n[2026-11-10 14:00:21] INFO Unit tests: 60 passed, 0 failed\n[2026-11-10 14:00:59] INFO Deployment completed successfully\n[2026-11-10 14:01:02] INFO GET /health returned HTTP 200\n[2026-11-10 14:01:04] INFO GET /ready returned HTTP 200\n[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings",
+  "test_results": {
+    "total": 60,
+    "passed": 60,
+    "failed": 0,
+    "failures": []
+  },
+  "dependencies": {
+    "packages": [
+      {
+        "name": "numpy",
+        "required_version": "2.1.0",
+        "resolved_version": "2.1.0",
+        "status": "ok"
+      },
+      {
+        "name": "pandas",
+        "required_version": "2.2.0",
+        "resolved_version": "2.2.0",
+        "status": "ok"
+      },
+      {
+        "name": "pytest",
+        "required_version": "8.3.0",
+        "resolved_version": "8.3.0",
+        "status": "ok"
+      }
+    ],
+    "lockfile_changed": false
+  },
+  "recent_changes": [
+    {
+      "commit": "e52b7c1",
+      "files": [
+        "README.md"
+      ],
+      "message": "Update project documentation"
+    }
+  ],
+  "deployment_health": {
+    "overall_status": "healthy",
+    "checks": [
+      {
+        "name": "/health",
+        "status_code": 200,
+        "passed": true,
+        "detail": "Service healthy"
+      },
+      {
+        "name": "/ready",
+        "status_code": 200,
+        "passed": true,
+        "detail": "Application ready"
+      }
+    ]
+  },
+  "run_history": [
+    {
+      "run_id": "run-2026-1109-007",
+      "status": "passed",
+      "failed_tests": []
+    },
+    {
+      "run_id": "run-2026-1110-004",
+      "status": "passed",
+      "failed_tests": []
+    }
+  ],
+  "expected_category": "NO_FAILURE"
+}

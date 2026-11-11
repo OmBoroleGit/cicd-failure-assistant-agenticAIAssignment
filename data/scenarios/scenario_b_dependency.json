@@ -1,0 +1,96 @@
+
+{
+  "id": "B",
+  "name": "Dependency Installation Failure",
+  "scenario_type": "critical",
+  "pipeline_status": {
+    "run_id": "run-2026-1109-002",
+    "branch": "feature/data-processing",
+    "stages": {
+      "checkout": {
+        "status": "passed",
+        "duration_seconds": 5
+      },
+      "dependency_install": {
+        "status": "failed",
+        "duration_seconds": 12
+      },
+      "build": {
+        "status": "skipped",
+        "duration_seconds": 0
+      },
+      "unit_tests": {
+        "status": "skipped",
+        "duration_seconds": 0
+      },
+      "deployment": {
+        "status": "skipped",
+        "duration_seconds": 0
+      }
+    }
+  },
+  "build_logs": "[2026-11-09 09:20:01] INFO Checking out branch feature/data-processing\n[2026-11-09 09:20:06] INFO Starting dependency installation\n[2026-11-09 09:20:09] INFO Reading requirements.txt\n[2026-11-09 09:20:11] ERROR Could not find a version that satisfies the requirement numpy==3.0.1\n[2026-11-09 09:20:11] ERROR No matching distribution found for numpy==3.0.1\n[2026-11-09 09:20:12] ERROR Dependency installation failed\n[2026-11-09 09:20:13] INFO Build and test stages skipped",
+  "test_results": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "failures": []
+  },
+  "dependencies": {
+    "packages": [
+      {
+        "name": "numpy",
+        "required_version": "3.0.1",
+        "resolved_version": null,
+        "status": "not_found"
+      },
+      {
+        "name": "pandas",
+        "required_version": "2.2.0",
+        "resolved_version": "2.2.0",
+        "status": "ok"
+      },
+      {
+        "name": "pytest",
+        "required_version": "8.3.0",
+        "resolved_version": "8.3.0",
+        "status": "ok"
+      }
+    ],
+    "lockfile_changed": true
+  },
+  "recent_changes": [
+    {
+      "commit": "b72d193",
+      "files": [
+        "requirements.txt",
+        "requirements.lock"
+      ],
+      "message": "Update project dependency versions"
+    },
+    {
+      "commit": "c41a82e",
+      "files": [
+        "src/data_processor.py"
+      ],
+      "message": "Add data processing functionality"
+    }
+  ],
+  "deployment_health": {
+    "overall_status": "not_run",
+    "checks": []
+  },
+  "run_history": [
+    {
+      "run_id": "run-2026-1108-006",
+      "status": "passed",
+      "failed_tests": []
+    },
+    {
+      "run_id": "run-2026-1109-002",
+      "status": "failed",
+      "failed_tests": []
+    }
+  ],
+  "expected_category": "DEPENDENCY_FAILURE"
+}
