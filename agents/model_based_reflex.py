@@ -1,9 +1,7 @@
-
 from collections import Counter
 
 from agents.base import BaseAgent
 from core.schema import AgentDecision
-
 
 class ModelBasedReflexAgent(BaseAgent):
     """
@@ -117,8 +115,12 @@ class ModelBasedReflexAgent(BaseAgent):
                 "unavailable or incompatible package version."
             )
 
+            # CHANGED: show the changed dependency files, not the field name
             if dependencies["lockfile_changed"]:
-                evidence.append("lockfile_changed")
+                for commit in changes:
+                    for file in commit["files"]:
+                        if "requirements" in file or "lock" in file:
+                            evidence.append(file)
 
             for package in dependencies["packages"]:
                 if package["status"] in {"not_found", "conflict"}:
@@ -128,8 +130,13 @@ class ModelBasedReflexAgent(BaseAgent):
                         package["status"]
                     ])
 
+            # CHANGED: show the real ERROR log lines, not the stage name
             if "dependency_install" in failed_stages:
-                evidence.append("dependency_install")
+                evidence.extend(
+                    line.strip()
+                    for line in scenario["build_logs"].splitlines()
+                    if "ERROR" in line
+                )
 
             next_step = (
                 "Ask the project maintainer to review recent dependency "

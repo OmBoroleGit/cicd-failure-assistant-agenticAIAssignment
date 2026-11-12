@@ -1,4 +1,3 @@
-
 """Simple Reflex Agent.
 
 Uses condition-action rules based only on the current pipeline
@@ -8,6 +7,17 @@ percept. It does not maintain or use historical internal state.
 from agents.base import BaseAgent
 from core.schema import AgentDecision
 
+def find_log_lines(build_logs: str, keywords: list[str]) -> list[str]:
+    """Return the build log lines that contain any of the keywords.
+
+    The lines are copied exactly, so they can be checked against
+    the scenario data.
+    """
+    return [
+        line.strip()
+        for line in build_logs.splitlines()
+        if line.strip() and any(keyword in line for keyword in keywords)
+    ]
 
 class SimpleReflexAgent(BaseAgent):
     """Classifies CI/CD failures using fixed condition-action rules."""
@@ -20,6 +30,7 @@ class SimpleReflexAgent(BaseAgent):
         tests = scenario.get("test_results", {})
         dependencies = scenario.get("dependencies", {})
         health = scenario.get("deployment_health", {})
+        build_logs = scenario.get("build_logs", "")
 
         evidence = []
         failed_stages = []
@@ -34,9 +45,6 @@ class SimpleReflexAgent(BaseAgent):
 
                 if status == "failed":
                     failed_stages.append(stage_name)
-                    evidence.append(
-                        f"Stage {stage_name} status: failed"
-                    )
 
         # Rule 1: Dependency failure.
         packages = dependencies.get("packages", [])
@@ -45,10 +53,9 @@ class SimpleReflexAgent(BaseAgent):
         for package in packages:
             if package.get("status") in ("not_found", "conflict", "deprecated"):
                 dependency_failures.append(package)
-                evidence.append(
-                    f"{package.get('name', 'Unknown package')}: "
-                    f"status {package.get('status')}"
-                )
+                package_name = package.get("name", "")
+                log_lines = find_log_lines(build_logs, [package_name])
+                evidence.extend(log_lines or [package_name])
 
         if dependency_failures:
             return AgentDecision(
@@ -98,9 +105,8 @@ class SimpleReflexAgent(BaseAgent):
                     or "Unknown"
                 )
 
-                evidence.append(
-                    f"Test {test_name} passed on retry"
-                )
+                log_lines = find_log_lines(build_logs, [test_name])
+                evidence.extend(log_lines or [test_name])
 
             return AgentDecision(
                 agent_name=self.name,
@@ -135,13 +141,9 @@ class SimpleReflexAgent(BaseAgent):
         failed_test_count = tests.get("failed", 0)
 
         if failed_test_count > 0 or failed_stages:
-            if failed_test_count > 0:
-                evidence.append(
-                    f"Failed test count: {failed_test_count}"
-                )
-
-            if not evidence and failed_stages:
-                evidence.extend(failed_stages)
+            evidence.extend(
+                find_log_lines(build_logs, ["FAILED", "ERROR"])
+            )
 
             return AgentDecision(
                 agent_name=self.name,
@@ -183,10 +185,9 @@ class SimpleReflexAgent(BaseAgent):
 
         if health.get("overall_status") == "unhealthy" or unhealthy_checks:
             for check in unhealthy_checks:
-                evidence.append(str(check))
+                evidence.append(check.get("detail", check.get("name", "")))
 
-            if health.get("overall_status") == "unhealthy":
-                evidence.append("Deployment overall status: unhealthy")
+            evidence.extend(find_log_lines(build_logs, ["ERROR"]))
 
             return AgentDecision(
                 agent_name=self.name,
@@ -220,7 +221,7 @@ class SimpleReflexAgent(BaseAgent):
             )
 
         # Rule 5: No failure detected.
-        evidence.append("No current pipeline, test, dependency, or health failure detected.")
+        evidence.extend(find_log_lines(build_logs, ["successfully"]))
 
         return AgentDecision(
             agent_name=self.name,
