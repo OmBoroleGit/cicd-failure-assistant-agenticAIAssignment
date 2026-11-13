@@ -1,0 +1,26 @@
+{
+  "experience": {
+    "TEST_FAILURE": {
+      "Compare the failing tests with the recent code change and fix it locally": {"successes": 9, "failures": 1},
+      "Revert the latest source commit locally and re-run the tests": {"successes": 7, "failures": 2}
+    },
+    "DEPENDENCY_FAILURE": {
+      "Pin an available version of the failing package in the requirements file": {"successes": 8, "failures": 1},
+      "Clear the package cache and re-install dependencies": {"successes": 2, "failures": 5}
+    },
+    "DEPLOYMENT_HEALTH_FAILURE": {
+      "Roll back the recent configuration change": {"successes": 7, "failures": 2},
+      "Restart the application pods": {"successes": 2, "failures": 4}
+    },
+    "AMBIGUOUS": {
+      "Check the flaky test for timing or network dependence": {"successes": 6, "failures": 1},
+      "Re-run the flaky test several times in a controlled way": {"successes": 4, "failures": 3},
+      "Quarantine the flaky test and open a ticket": {"successes": 2, "failures": 2}
+    },
+    "NO_FAILURE": {
+      "Approve the release with no changes": {"successes": 10, "failures": 0},
+      "Run an extra manual smoke test before release": {"successes": 3, "failures": 1}
+    }
+  },
+  "last_update": null
+}
