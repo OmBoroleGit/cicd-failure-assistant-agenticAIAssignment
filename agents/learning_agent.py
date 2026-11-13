@@ -3,19 +3,20 @@
 Picks the next step with the best past success rate, using
 smoothed success rate = (successes + 1) / (successes + failures + 2)
 from data/experience.json. update() records user feedback and saves it,
-so the agent's future choices change with experience.
+so the agent's future choices change with experience. reset_experience()
+restores the seeded counts for repeatable demos.
 """
 
 import json
+import shutil
 from pathlib import Path
 
 from agents.base import BaseAgent
 from agents.utility_based import CAUSES, CHECKLISTS
 from core.schema import AgentDecision
 
-
 EXPERIENCE_FILE = Path(__file__).resolve().parent.parent / "data" / "experience.json"
-
+SEED_FILE = Path(__file__).resolve().parent.parent / "data" / "experience_seed.json"
 
 def success_rate(counts: dict) -> float:
     """Smoothed success rate: (s + 1) / (s + f + 2)."""
@@ -23,14 +24,18 @@ def success_rate(counts: dict) -> float:
     f = counts["failures"]
     return round((s + 1) / (s + f + 2), 2)
 
-
 class LearningAgent(BaseAgent):
     """Chooses the action that has worked best in the past."""
 
     name = "Learning Agent"
 
-    def __init__(self, experience_path: Path = EXPERIENCE_FILE) -> None:
+    def __init__(
+        self,
+        experience_path: Path = EXPERIENCE_FILE,
+        seed_path: Path = SEED_FILE,
+    ) -> None:
         self.experience_path = experience_path
+        self.seed_path = seed_path
 
     def decide(self, scenario: dict) -> AgentDecision:
         category, evidence = self._detect_category(scenario)
@@ -39,7 +44,7 @@ class LearningAgent(BaseAgent):
 
         # Score every known action for this category by its past success rate.
         rates = {action: success_rate(counts) for action, counts in actions.items()}
-        best_action = max(rates, key=rates.get)
+        best_action =max(rates, key=rates.get)
 
         count_lines = "; ".join(
             f"'{action}': {counts['successes']} of "
@@ -94,6 +99,10 @@ class LearningAgent(BaseAgent):
             "rate_after": success_rate(counts),
         }
         self._save(data)
+
+    def reset_experience(self) -> None:
+        """Restore the experience file to the original seeded counts."""
+        shutil.copyfile(self.seed_path, self.experience_path)
 
     def _load(self) -> dict:
         with self.experience_path.open("r", encoding="utf-8") as file:
