@@ -1,0 +1,401 @@
+{
+  "scenario": "D",
+  "analysis_run_at": "2026-11-15T17:28:36+00:00",
+  "decisions": [
+    {
+      "agent_name": "Simple Reflex Agent",
+      "failure_category": "NO_FAILURE",
+      "evidence": [
+        "[2026-11-10 14:00:05] INFO Dependencies installed successfully",
+        "[2026-11-10 14:00:20] INFO Build completed successfully",
+        "[2026-11-10 14:00:59] INFO Deployment completed successfully",
+        "[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings"
+      ],
+      "likely_cause": "No failure is indicated by the current pipeline data.",
+      "next_step": "Continue monitoring the pipeline and deployment health. Human action required",
+      "verification_checklist": [
+        "Confirm all pipeline stages passed.",
+        "Confirm automated tests passed.",
+        "Confirm dependencies are resolved.",
+        "Confirm deployment health checks are healthy."
+      ],
+      "reasoning": "No condition-action rule for dependency, flaky test, test, or deployment failure was triggered.",
+      "confidence": 0.95,
+      "details": {
+        "rule_fired": "NO_FAILURE_RULE",
+        "failed_stages": [],
+        "failed_test_count": 0
+      }
+    },
+    {
+      "agent_name": "Model-Based Reflex Agent",
+      "failure_category": "NO_FAILURE",
+      "evidence": [
+        "passed",
+        "passed",
+        "passed",
+        "passed",
+        "passed",
+        "healthy"
+      ],
+      "likely_cause": "Current and historical pipeline information shows no failure.",
+      "next_step": "Review the successful pipeline history and approve the result if it meets release requirements. Human action required",
+      "verification_checklist": [
+        "Confirm all pipeline stages completed successfully.",
+        "Confirm all unit tests passed.",
+        "Confirm deployment health checks are successful."
+      ],
+      "reasoning": "Updated internal state using current pipeline observations, recent changes and run history. Last successful run: run-2026-1110-004. Changed files: ['README.md']. Historical failed tests: []. Flaky tests: []. Selected rule: NO_FAILURE_RULE.",
+      "confidence": 0.95,
+      "details": {
+        "internal_state": {
+          "current_failed_stages": [],
+          "last_successful_run": "run-2026-1110-004",
+          "changed_files": [
+            "README.md"
+          ],
+          "historical_failed_tests": [],
+          "flaky_tests": [],
+          "repeated_failures": [],
+          "unstable_runs": [],
+          "lockfile_changed": false
+        },
+        "rule_fired": "NO_FAILURE_RULE"
+      }
+    },
+    {
+      "agent_name": "Goal-Based Agent",
+      "failure_category": "NO_FAILURE",
+      "evidence": [
+        "Service healthy",
+        "Application ready"
+      ],
+      "likely_cause": "All stages, tests and health checks passed.",
+      "next_step": "No fix needed; review and approve the release. Human action required",
+      "verification_checklist": [
+        "All pipeline stages passed.",
+        "All tests passed.",
+        "Health checks return HTTP 200."
+      ],
+      "reasoning": "Goal: identify the root cause with enough evidence. Breadth-first search explored 14 plans. Shortest plan that reaches the goal: check_pipeline_status -> get_test_results -> check_deployment_health. It proves NO_FAILURE because these facts were found: all_stages_passed, all_tests_passed, deployment_healthy.",
+      "confidence": 0.9,
+      "details": {
+        "goal": "root cause identified with enough evidence",
+        "plan": [
+          "check_pipeline_status",
+          "get_test_results",
+          "check_deployment_health"
+        ],
+        "facts_found": [
+          "all_stages_passed",
+          "all_tests_passed",
+          "deployment_healthy",
+          "pipeline_checked",
+          "tests_checked"
+        ],
+        "plans_explored": 14
+      }
+    },
+    {
+      "agent_name": "Utility-Based Agent",
+      "failure_category": "NO_FAILURE",
+      "evidence": [
+        "[2026-11-10 14:00:05] INFO Dependencies installed successfully",
+        "[2026-11-10 14:00:20] INFO Build completed successfully",
+        "[2026-11-10 14:00:59] INFO Deployment completed successfully",
+        "[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings"
+      ],
+      "likely_cause": "All stages, tests and health checks passed.",
+      "next_step": "Approve the release with no changes. Human action required",
+      "verification_checklist": [
+        "All pipeline stages passed.",
+        "All tests passed.",
+        "Health checks return HTTP 200."
+      ],
+      "reasoning": "Utility = P(resolves issue) x impact - time cost - risk. Evidence gives these probabilities: {'TEST_FAILURE': 0.0, 'DEPENDENCY_FAILURE': 0.0, 'DEPLOYMENT_HEALTH_FAILURE': 0.0, 'AMBIGUOUS': 0.0, 'NO_FAILURE': 1.0}. Scores: Approve the release with no changes = 4.0; Escalate for a full manual investigation = -0.4; Re-run the flaky test several times in a controlled way = -1.5; Pin an available version of the failing package in the requirements file = -3.0; Roll back the recent configuration change and re-check the health endpoints = -4.0; Compare the failing tests with the recent code change and fix it locally = -4.5. Winner: 'Approve the release with no changes' with utility 4.0.",
+      "confidence": 1.0,
+      "details": {
+        "probabilities": {
+          "TEST_FAILURE": 0.0,
+          "DEPENDENCY_FAILURE": 0.0,
+          "DEPLOYMENT_HEALTH_FAILURE": 0.0,
+          "AMBIGUOUS": 0.0,
+          "NO_FAILURE": 1.0
+        },
+        "utility_scores": [
+          {
+            "step": "Approve the release with no changes",
+            "fixes": "NO_FAILURE",
+            "impact": 5,
+            "time_cost": 0,
+            "risk": 1,
+            "p_resolves": 1.0,
+            "utility": 4.0
+          },
+          {
+            "step": "Escalate for a full manual investigation",
+            "fixes": "ANY",
+            "impact": 9,
+            "time_cost": 8,
+            "risk": 0.5,
+            "p_resolves": 0.9,
+            "utility": -0.4
+          },
+          {
+            "step": "Re-run the flaky test several times in a controlled way",
+            "fixes": "AMBIGUOUS",
+            "impact": 6,
+            "time_cost": 1,
+            "risk": 0.5,
+            "p_resolves": 0.0,
+            "utility": -1.5
+          },
+          {
+            "step": "Pin an available version of the failing package in the requirements file",
+            "fixes": "DEPENDENCY_FAILURE",
+            "impact": 9,
+            "time_cost": 2,
+            "risk": 1,
+            "p_resolves": 0.0,
+            "utility": -3.0
+          },
+          {
+            "step": "Roll back the recent configuration change and re-check the health endpoints",
+            "fixes": "DEPLOYMENT_HEALTH_FAILURE",
+            "impact": 9,
+            "time_cost": 2,
+            "risk": 2,
+            "p_resolves": 0.0,
+            "utility": -4.0
+          },
+          {
+            "step": "Compare the failing tests with the recent code change and fix it locally",
+            "fixes": "TEST_FAILURE",
+            "impact": 9,
+            "time_cost": 4,
+            "risk": 0.5,
+            "p_resolves": 0.0,
+            "utility": -4.5
+          }
+        ],
+        "winner": "Approve the release with no changes"
+      }
+    },
+    {
+      "agent_name": "Learning Agent",
+      "failure_category": "NO_FAILURE",
+      "evidence": [
+        "[2026-11-10 14:00:05] INFO Dependencies installed successfully",
+        "[2026-11-10 14:00:20] INFO Build completed successfully",
+        "[2026-11-10 14:00:59] INFO Deployment completed successfully",
+        "[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings"
+      ],
+      "likely_cause": "All stages, tests and health checks passed.",
+      "next_step": "Approve the release with no changes. Human action required",
+      "verification_checklist": [
+        "All pipeline stages passed.",
+        "All tests passed.",
+        "Health checks return HTTP 200."
+      ],
+      "reasoning": "Detected category NO_FAILURE. Stored experience for this category: 'Approve the release with no changes': 10 of 10 successes (rate 0.92); 'Run an extra manual smoke test before release': 3 of 4 successes (rate 0.67). Chose 'Approve the release with no changes' because it has the best smoothed success rate (s+1)/(s+f+2). No feedback recorded yet for this category.",
+      "confidence": 0.92,
+      "details": {
+        "experience_counts": {
+          "Approve the release with no changes": {
+            "successes": 10,
+            "failures": 0
+          },
+          "Run an extra manual smoke test before release": {
+            "successes": 3,
+            "failures": 1
+          }
+        },
+        "success_rates": {
+          "Approve the release with no changes": 0.92,
+          "Run an extra manual smoke test before release": 0.67
+        },
+        "chosen_action": "Approve the release with no changes",
+        "last_update": {
+          "category": "AMBIGUOUS",
+          "action": "Check the flaky test for timing or network dependence",
+          "success": false,
+          "rate_before": 0.58,
+          "rate_after": 0.54
+        }
+      }
+    },
+    {
+      "agent_name": "LLM Agent",
+      "failure_category": "NO_FAILURE",
+      "evidence": [
+        "\"name\": \"/ready\",",
+        "\"run_history\": [",
+        "[2026-11-10 14:01:02] INFO GET /health returned HTTP 200",
+        "[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings"
+      ],
+      "likely_cause": "All stages passed with healthy health checks. No failures detected in the pipeline run.",
+      "next_step": "Confirm no issues by checking production environment and monitoring tools for any anomalies. Human action required",
+      "verification_checklist": [
+        "Verify that all health endpoints (/health and /ready) return 200 OK status",
+        "Check application logs for any recent errors or warnings",
+        "Ensure the deployment was successful in the target environment",
+        "Validate user-reported functionality matches expectations"
+      ],
+      "reasoning": "Called 2 tool(s) (native tool selection): get_pipeline_status, read_build_logs. The pipeline run shows all stages passed (checkout, dependency_install, build, unit_tests, deployment) with health checks reporting 200 status for both /health and /ready endpoints. The run history shows no failed tests across multiple runs. The logs indicate successful completion without errors.",
+      "confidence": 1.0,
+      "details": {
+        "model": "qwen3:4b",
+        "tool_mode": "native",
+        "tool_calls": [
+          {
+            "tool": "get_pipeline_status",
+            "args": {},
+            "output": "{\n  \"pipeline_status\": {\n    \"run_id\": \"run-2026-1110-004\",\n    \"branch\": \"main\",\n    \"stages\": {\n      \"checkout\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 4\n      },\n      \"dependency_install\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 15\n      },\n      \"build\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 27\n      },\n      \"unit_tests\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 38\n      },\n      \"deployment\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 41\n      }\n    }\n  },\n  \"deployment_health\": {\n    \"overall_status\": \"healthy\",\n    \"checks\": [\n      {\n        \"name\": \"/health\",\n        \"status_code\": 200,\n        \"passed\": true,\n        \"detail\": \"Service healthy\"\n      },\n      {\n        \"name\": \"/ready\",\n        \"status_code\": 200,\n        \"passed\": true,\n        \"detail\": \"Application ready\"\n      }\n    ]\n  },\n  \"run_history\": [\n    {\n      \"run_id\": \"run-2026-1109-007\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1110-004\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "read_build_logs",
+            "args": {},
+            "output": "[2026-11-10 14:00:01] INFO Checking out branch main\n[2026-11-10 14:00:05] INFO Dependencies installed successfully\n[2026-11-10 14:00:20] INFO Build completed successfully\n[2026-11-10 14:00:21] INFO Unit tests: 60 passed, 0 failed\n[2026-11-10 14:00:59] INFO Deployment completed successfully\n[2026-11-10 14:01:02] INFO GET /health returned HTTP 200\n[2026-11-10 14:01:04] INFO GET /ready returned HTTP 200\n[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings",
+            "mode": "native"
+          }
+        ],
+        "tool_call_count": 2,
+        "evidence_lines": [
+          27,
+          31,
+          43,
+          45
+        ]
+      }
+    }
+  ],
+  "evidence_checks": {
+    "Simple Reflex Agent": {
+      "items": [
+        {
+          "evidence": "[2026-11-10 14:00:05] INFO Dependencies installed successfully",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:00:20] INFO Build completed successfully",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:00:59] INFO Deployment completed successfully",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Model-Based Reflex Agent": {
+      "items": [
+        {
+          "evidence": "passed",
+          "found": true
+        },
+        {
+          "evidence": "passed",
+          "found": true
+        },
+        {
+          "evidence": "passed",
+          "found": true
+        },
+        {
+          "evidence": "passed",
+          "found": true
+        },
+        {
+          "evidence": "passed",
+          "found": true
+        },
+        {
+          "evidence": "healthy",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Goal-Based Agent": {
+      "items": [
+        {
+          "evidence": "Service healthy",
+          "found": true
+        },
+        {
+          "evidence": "Application ready",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Utility-Based Agent": {
+      "items": [
+        {
+          "evidence": "[2026-11-10 14:00:05] INFO Dependencies installed successfully",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:00:20] INFO Build completed successfully",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:00:59] INFO Deployment completed successfully",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Learning Agent": {
+      "items": [
+        {
+          "evidence": "[2026-11-10 14:00:05] INFO Dependencies installed successfully",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:00:20] INFO Build completed successfully",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:00:59] INFO Deployment completed successfully",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "LLM Agent": {
+      "items": [
+        {
+          "evidence": "\"name\": \"/ready\",",
+          "found": true
+        },
+        {
+          "evidence": "\"run_history\": [",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:01:02] INFO GET /health returned HTTP 200",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings",
+          "found": true
+        }
+      ],
+      "verified": true
+    }
+  }
+}

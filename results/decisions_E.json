@@ -1,0 +1,413 @@
+{
+  "scenario": "E",
+  "analysis_run_at": "2026-11-15T17:30:23+00:00",
+  "decisions": [
+    {
+      "agent_name": "Simple Reflex Agent",
+      "failure_category": "AMBIGUOUS",
+      "evidence": [
+        "[2026-11-10 16:10:35] FAILED test_api_timeout.py::test_api_timeout - Request timed out after 5 seconds",
+        "[2026-11-10 16:10:44] PASSED test_api_timeout.py::test_api_timeout on retry",
+        "[2026-11-10 16:10:45] WARNING Flaky test detected: test_api_timeout"
+      ],
+      "likely_cause": "A test failed initially but passed on retry, indicating a possible intermittent failure.",
+      "next_step": "Investigate the intermittent test and repeat the pipeline run to confirm stability. Human action required",
+      "verification_checklist": [
+        "Inspect the test failure and retry logs.",
+        "Repeat the test several times.",
+        "Check for timing or environment-related instability."
+      ],
+      "reasoning": "The current test results show a failure that passed on retry, so the pipeline result is potentially flaky.",
+      "confidence": 0.7,
+      "details": {
+        "rule_fired": "FLAKY_TEST_RULE",
+        "failed_stages": [
+          "unit_tests"
+        ],
+        "failed_test_count": 0
+      }
+    },
+    {
+      "agent_name": "Model-Based Reflex Agent",
+      "failure_category": "AMBIGUOUS",
+      "evidence": [
+        "test_api_timeout",
+        "test_api_timeout",
+        "run-2026-1110-005",
+        "Request timed out after 5 seconds"
+      ],
+      "likely_cause": "Test history indicates intermittent behavior. A failure followed by a successful retry or repeated historical failures requires further investigation.",
+      "next_step": "Ask the developer to investigate the intermittent test using controlled repeated runs and compare its historical failure pattern. Human action required",
+      "verification_checklist": [
+        "Identify tests with repeated or intermittent failures.",
+        "Run suspected flaky tests multiple times.",
+        "Compare current results with previous pipeline runs.",
+        "Inspect timing, network and shared-state dependencies.",
+        "Confirm stable results before proceeding."
+      ],
+      "reasoning": "Updated internal state using current pipeline observations, recent changes and run history. Last successful run: run-2026-1110-004. Changed files: ['docs/api_usage.md', 'README.md']. Historical failed tests: ['test_api_timeout', 'test_api_timeout']. Flaky tests: ['test_api_timeout']. Selected rule: FLAKY_HISTORY_RULE.",
+      "confidence": 0.7,
+      "details": {
+        "internal_state": {
+          "current_failed_stages": [
+            "unit_tests"
+          ],
+          "last_successful_run": "run-2026-1110-004",
+          "changed_files": [
+            "docs/api_usage.md",
+            "README.md"
+          ],
+          "historical_failed_tests": [
+            "test_api_timeout",
+            "test_api_timeout"
+          ],
+          "flaky_tests": [
+            "test_api_timeout"
+          ],
+          "repeated_failures": [
+            "test_api_timeout"
+          ],
+          "unstable_runs": [
+            "run-2026-1110-005"
+          ],
+          "lockfile_changed": false
+        },
+        "rule_fired": "FLAKY_HISTORY_RULE"
+      }
+    },
+    {
+      "agent_name": "Goal-Based Agent",
+      "failure_category": "AMBIGUOUS",
+      "evidence": [
+        "test_api_timeout",
+        "run-2026-1110-003",
+        "run-2026-1110-005"
+      ],
+      "likely_cause": "A test failed, passed on retry and has failed before: likely a flaky test.",
+      "next_step": "Re-run the flaky test several times in a controlled way before changing any code. Human action required",
+      "verification_checklist": [
+        "The test passes on several repeated runs.",
+        "No timeout errors in the test log.",
+        "Pipeline is no longer marked unstable."
+      ],
+      "reasoning": "Goal: identify the root cause with enough evidence. Breadth-first search explored 15 plans. Shortest plan that reaches the goal: check_pipeline_status -> get_test_results -> review_run_history. It proves AMBIGUOUS because these facts were found: test_passed_on_retry, test_failed_before.",
+      "confidence": 0.9,
+      "details": {
+        "goal": "root cause identified with enough evidence",
+        "plan": [
+          "check_pipeline_status",
+          "get_test_results",
+          "review_run_history"
+        ],
+        "facts_found": [
+          "pipeline_checked",
+          "test_failed_before",
+          "test_passed_on_retry",
+          "test_stage_failed",
+          "tests_checked"
+        ],
+        "plans_explored": 15
+      }
+    },
+    {
+      "agent_name": "Utility-Based Agent",
+      "failure_category": "AMBIGUOUS",
+      "evidence": [
+        "test_api_timeout",
+        "run-2026-1110-003",
+        "run-2026-1110-005"
+      ],
+      "likely_cause": "The failure is intermittent; most likely a flaky test.",
+      "next_step": "Re-run the flaky test several times in a controlled way. Human action required",
+      "verification_checklist": [
+        "The test passes on several repeated runs.",
+        "No timeout errors in the test log.",
+        "Pipeline is no longer marked unstable."
+      ],
+      "reasoning": "Utility = P(resolves issue) x impact - time cost - risk. Evidence gives these probabilities: {'TEST_FAILURE': 0.33, 'DEPENDENCY_FAILURE': 0.0, 'DEPLOYMENT_HEALTH_FAILURE': 0.0, 'AMBIGUOUS': 0.67, 'NO_FAILURE': 0.0}. Scores: Re-run the flaky test several times in a controlled way = 2.52; Escalate for a full manual investigation = -0.4; Approve the release with no changes = -1.0; Compare the failing tests with the recent code change and fix it locally = -1.53; Pin an available version of the failing package in the requirements file = -3.0; Roll back the recent configuration change and re-check the health endpoints = -4.0. Winner: 'Re-run the flaky test several times in a controlled way' with utility 2.52.",
+      "confidence": 0.67,
+      "details": {
+        "probabilities": {
+          "TEST_FAILURE": 0.33,
+          "DEPENDENCY_FAILURE": 0.0,
+          "DEPLOYMENT_HEALTH_FAILURE": 0.0,
+          "AMBIGUOUS": 0.67,
+          "NO_FAILURE": 0.0
+        },
+        "utility_scores": [
+          {
+            "step": "Re-run the flaky test several times in a controlled way",
+            "fixes": "AMBIGUOUS",
+            "impact": 6,
+            "time_cost": 1,
+            "risk": 0.5,
+            "p_resolves": 0.67,
+            "utility": 2.52
+          },
+          {
+            "step": "Escalate for a full manual investigation",
+            "fixes": "ANY",
+            "impact": 9,
+            "time_cost": 8,
+            "risk": 0.5,
+            "p_resolves": 0.9,
+            "utility": -0.4
+          },
+          {
+            "step": "Approve the release with no changes",
+            "fixes": "NO_FAILURE",
+            "impact": 5,
+            "time_cost": 0,
+            "risk": 1,
+            "p_resolves": 0.0,
+            "utility": -1.0
+          },
+          {
+            "step": "Compare the failing tests with the recent code change and fix it locally",
+            "fixes": "TEST_FAILURE",
+            "impact": 9,
+            "time_cost": 4,
+            "risk": 0.5,
+            "p_resolves": 0.33,
+            "utility": -1.53
+          },
+          {
+            "step": "Pin an available version of the failing package in the requirements file",
+            "fixes": "DEPENDENCY_FAILURE",
+            "impact": 9,
+            "time_cost": 2,
+            "risk": 1,
+            "p_resolves": 0.0,
+            "utility": -3.0
+          },
+          {
+            "step": "Roll back the recent configuration change and re-check the health endpoints",
+            "fixes": "DEPLOYMENT_HEALTH_FAILURE",
+            "impact": 9,
+            "time_cost": 2,
+            "risk": 2,
+            "p_resolves": 0.0,
+            "utility": -4.0
+          }
+        ],
+        "winner": "Re-run the flaky test several times in a controlled way"
+      }
+    },
+    {
+      "agent_name": "Learning Agent",
+      "failure_category": "AMBIGUOUS",
+      "evidence": [
+        "test_api_timeout",
+        "Request timed out after 5 seconds"
+      ],
+      "likely_cause": "The failure is intermittent; most likely a flaky test.",
+      "next_step": "Re-run the flaky test several times in a controlled way. Human action required",
+      "verification_checklist": [
+        "The test passes on several repeated runs.",
+        "No timeout errors in the test log.",
+        "Pipeline is no longer marked unstable."
+      ],
+      "reasoning": "Detected category AMBIGUOUS. Stored experience for this category: 'Check the flaky test for timing or network dependence': 6 of 11 successes (rate 0.54); 'Re-run the flaky test several times in a controlled way': 4 of 7 successes (rate 0.56); 'Quarantine the flaky test and open a ticket': 2 of 4 successes (rate 0.5). Chose 'Re-run the flaky test several times in a controlled way' because it has the best smoothed success rate (s+1)/(s+f+2). Last feedback: 'Check the flaky test for timing or network dependence' did not work, so its rate moved from 0.58 to 0.54.",
+      "confidence": 0.56,
+      "details": {
+        "experience_counts": {
+          "Check the flaky test for timing or network dependence": {
+            "successes": 6,
+            "failures": 5
+          },
+          "Re-run the flaky test several times in a controlled way": {
+            "successes": 4,
+            "failures": 3
+          },
+          "Quarantine the flaky test and open a ticket": {
+            "successes": 2,
+            "failures": 2
+          }
+        },
+        "success_rates": {
+          "Check the flaky test for timing or network dependence": 0.54,
+          "Re-run the flaky test several times in a controlled way": 0.56,
+          "Quarantine the flaky test and open a ticket": 0.5
+        },
+        "chosen_action": "Re-run the flaky test several times in a controlled way",
+        "last_update": {
+          "category": "AMBIGUOUS",
+          "action": "Check the flaky test for timing or network dependence",
+          "success": false,
+          "rate_before": 0.58,
+          "rate_after": 0.54
+        }
+      }
+    },
+    {
+      "agent_name": "LLM Agent",
+      "failure_category": "AMBIGUOUS",
+      "evidence": [
+        "\"test_name\": \"test_api_timeout\",",
+        "\"file\": \"test_api_timeout.py\",",
+        "\"message\": \"Request timed out after 5 seconds\",",
+        "\"retry_passed\": true"
+      ],
+      "likely_cause": "The test_api_timeout is flaky due to network timing issues, as it failed once but passed on retry. The deprecation warning suggests potential API changes might be affecting the timeout behavior.",
+      "next_step": "Check if the flaky test has been fixed by reviewing the recent change in documentation and ensuring network stability during tests. Human action required",
+      "verification_checklist": [
+        "Confirm the test_api_timeout passes without retries after the fix",
+        "Ensure no deprecation warnings appear in the build logs",
+        "Validate that the documentation changes did not introduce network-related issues"
+      ],
+      "reasoning": "Called 5 tool(s) (structured tool selection): get_pipeline_status, get_test_results, get_recent_change_summary, read_build_logs, get_dependency_info. The pipeline failed unit tests but the test passed on retry with a flaky label. The evidence shows one failure (test_api_timeout) that was retried and succeeded, indicating it's flaky rather than consistently failing. The deprecation warning about legacy API suggests possible incompatibility, but since the test passed after retry, this is not a consistent failure pattern.",
+      "confidence": 0.75,
+      "details": {
+        "model": "qwen3:4b",
+        "tool_mode": "structured",
+        "tool_calls": [
+          {
+            "tool": "get_pipeline_status",
+            "args": {},
+            "output": "{\n  \"pipeline_status\": {\n    \"run_id\": \"run-2026-1110-005\",\n    \"branch\": \"feature/documentation-update\",\n    \"stages\": {\n      \"checkout\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 4\n      },\n      \"dependency_install\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 16\n      },\n      \"build\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 28\n      },\n      \"unit_tests\": {\n        \"status\": \"failed\",\n        \"duration_seconds\": 43\n      },\n      \"deployment\": {\n        \"status\": \"skipped\",\n        \"duration_seconds\": 0\n      }\n    }\n  },\n  \"deployment_health\": {\n    \"overall_status\": \"not_run\",\n    \"checks\": []\n  },\n  \"run_history\": [\n    {\n      \"run_id\": \"run-2026-1110-002\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1110-003\",\n      \"status\": \"failed\",\n      \"failed_tests\": [\n        \"test_api_timeout\"\n      ]\n    },\n    {\n      \"run_id\": \"run-2026-1110-004\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1110-005\",\n      \"status\": \"unstable\",\n      \"failed_tests\": [\n        \"test_api_timeout\"\n      ]\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "get_test_results",
+            "args": {},
+            "output": "{\n  \"total\": 40,\n  \"passed\": 40,\n  \"failed\": 0,\n  \"failures\": [\n    {\n      \"test_name\": \"test_api_timeout\",\n      \"file\": \"test_api_timeout.py\",\n      \"message\": \"Request timed out after 5 seconds\",\n      \"retry_count\": 1,\n      \"retry_passed\": true\n    }\n  ]\n}",
+            "mode": "structured"
+          },
+          {
+            "tool": "get_recent_change_summary",
+            "args": {},
+            "output": "[\n  {\n    \"commit\": \"f81a3c2\",\n    \"files\": [\n      \"docs/api_usage.md\"\n    ],\n    \"message\": \"Update API usage documentation\"\n  },\n  {\n    \"commit\": \"b72c4d9\",\n    \"files\": [\n      \"README.md\"\n    ],\n    \"message\": \"Clarify project setup instructions\"\n  }\n]",
+            "mode": "structured"
+          },
+          {
+            "tool": "read_build_logs",
+            "args": {},
+            "output": "[2026-11-10 16:10:01] INFO Checking out branch feature/documentation-update\n[2026-11-10 16:10:05] INFO Dependencies installed successfully\n[2026-11-10 16:10:21] INFO Build completed successfully\n[2026-11-10 16:10:22] INFO Starting unit tests\n[2026-11-10 16:10:31] WARNING DeprecationWarning: legacy API will be removed in a future release\n[2026-11-10 16:10:35] FAILED test_api_timeout.py::test_api_timeout - Request timed out after 5 seconds\n[2026-11-10 16:10:40] INFO Retrying failed test\n[2026-11-10 16:10:44] PASSED test_api_timeout.py::test_api_timeout on retry\n[2026-11-10 16:10:45] WARNING Flaky test detected: test_api_timeout\n[2026-11-10 16:10:46] INFO Final test status: 1 initial failure, 1 retry passed\n[2026-11-10 16:10:47] INFO Pipeline marked unstable",
+            "mode": "structured"
+          },
+          {
+            "tool": "get_dependency_info",
+            "args": {},
+            "output": "{\n  \"packages\": [\n    {\n      \"name\": \"requests\",\n      \"required_version\": \"2.32.0\",\n      \"resolved_version\": \"2.32.0\",\n      \"status\": \"ok\"\n    },\n    {\n      \"name\": \"pytest\",\n      \"required_version\": \"8.3.0\",\n      \"resolved_version\": \"8.3.0\",\n      \"status\": \"ok\"\n    }\n  ],\n  \"lockfile_changed\": false\n}",
+            "mode": "structured"
+          }
+        ],
+        "tool_call_count": 5,
+        "evidence_lines": [
+          42,
+          43,
+          44,
+          46
+        ]
+      }
+    }
+  ],
+  "evidence_checks": {
+    "Simple Reflex Agent": {
+      "items": [
+        {
+          "evidence": "[2026-11-10 16:10:35] FAILED test_api_timeout.py::test_api_timeout - Request timed out after 5 seconds",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 16:10:44] PASSED test_api_timeout.py::test_api_timeout on retry",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 16:10:45] WARNING Flaky test detected: test_api_timeout",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Model-Based Reflex Agent": {
+      "items": [
+        {
+          "evidence": "test_api_timeout",
+          "found": true
+        },
+        {
+          "evidence": "test_api_timeout",
+          "found": true
+        },
+        {
+          "evidence": "run-2026-1110-005",
+          "found": true
+        },
+        {
+          "evidence": "Request timed out after 5 seconds",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Goal-Based Agent": {
+      "items": [
+        {
+          "evidence": "test_api_timeout",
+          "found": true
+        },
+        {
+          "evidence": "run-2026-1110-003",
+          "found": true
+        },
+        {
+          "evidence": "run-2026-1110-005",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Utility-Based Agent": {
+      "items": [
+        {
+          "evidence": "test_api_timeout",
+          "found": true
+        },
+        {
+          "evidence": "run-2026-1110-003",
+          "found": true
+        },
+        {
+          "evidence": "run-2026-1110-005",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Learning Agent": {
+      "items": [
+        {
+          "evidence": "test_api_timeout",
+          "found": true
+        },
+        {
+          "evidence": "Request timed out after 5 seconds",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "LLM Agent": {
+      "items": [
+        {
+          "evidence": "\"test_name\": \"test_api_timeout\",",
+          "found": true
+        },
+        {
+          "evidence": "\"file\": \"test_api_timeout.py\",",
+          "found": true
+        },
+        {
+          "evidence": "\"message\": \"Request timed out after 5 seconds\",",
+          "found": true
+        },
+        {
+          "evidence": "\"retry_passed\": true",
+          "found": true
+        }
+      ],
+      "verified": true
+    }
+  }
+}

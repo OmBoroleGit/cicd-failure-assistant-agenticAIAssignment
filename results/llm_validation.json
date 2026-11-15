@@ -1,0 +1,341 @@
+[
+  {
+    "scenario": "A",
+    "expected_category": "TEST_FAILURE",
+    "checks": {
+      "no_runtime_error": true,
+      "expected_category": true,
+      "two_distinct_tools": true,
+      "nonempty_evidence": true,
+      "likely_cause": true,
+      "next_step": true,
+      "reasoning": true,
+      "checklist_length": true
+    },
+    "decision": {
+      "agent_name": "LLM Agent",
+      "failure_category": "TEST_FAILURE",
+      "evidence": [
+        "\"failed_tests\": [",
+        "\"test_discount_calc\",",
+        "\"test_zero_discount\",",
+        "\"test_max_discount\""
+      ],
+      "likely_cause": "The discount calculation logic in pricing/discount.py has changed, causing specific tests to fail with unexpected values (e.g., expected 90.0 vs received 100.0).",
+      "next_step": "Review the recent code changes and fix the discount calculation logic in pricing/discount.py. Human action required",
+      "verification_checklist": [
+        "Confirm test_discount_calc passes after fixing pricing/discount.py",
+        "Verify no new failures in test_zero_discount or test_max_discount",
+        "Ensure all three failing tests (test_discount_calc, test_zero_discount, test_max_discount) pass with the correct expected values"
+      ],
+      "reasoning": "Called 3 tool(s) (native tool selection): get_pipeline_status, get_test_results, get_recent_change_summary. The unit_tests stage failed with specific test cases failing in pricing/discount.py. The recent change to pricing/discount.py (commit a81c2f4) introduced logic changes that cause these tests to fail consistently (3 out of 50 tests), and the failure did not pass on retry (retry_count=0 for all).",
+      "confidence": 0.9,
+      "details": {
+        "model": "qwen3:4b",
+        "tool_mode": "native",
+        "tool_calls": [
+          {
+            "tool": "get_pipeline_status",
+            "args": {},
+            "output": "{\n  \"pipeline_status\": {\n    \"run_id\": \"run-2026-1108-001\",\n    \"branch\": \"feature/discount-update\",\n    \"stages\": {\n      \"checkout\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 4\n      },\n      \"dependency_install\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 18\n      },\n      \"build\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 32\n      },\n      \"unit_tests\": {\n        \"status\": \"failed\",\n        \"duration_seconds\": 21\n      },\n      \"deployment\": {\n        \"status\": \"skipped\",\n        \"duration_seconds\": 0\n      }\n    }\n  },\n  \"deployment_health\": {\n    \"overall_status\": \"not_run\",\n    \"checks\": []\n  },\n  \"run_history\": [\n    {\n      \"run_id\": \"run-2026-1107-004\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1108-001\",\n      \"status\": \"failed\",\n      \"failed_tests\": [\n        \"test_discount_calc\",\n        \"test_zero_discount\",\n        \"test_max_discount\"\n      ]\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "get_test_results",
+            "args": {},
+            "output": "{\n  \"total\": 50,\n  \"passed\": 47,\n  \"failed\": 3,\n  \"failures\": [\n    {\n      \"test_name\": \"test_discount_calc\",\n      \"file\": \"test_discount_calc.py\",\n      \"message\": \"Expected 90.0, received 100.0\",\n      \"retry_count\": 0\n    },\n    {\n      \"test_name\": \"test_zero_discount\",\n      \"file\": \"test_discount_calc.py\",\n      \"message\": \"Expected 100.0, received 0.0\",\n      \"retry_count\": 0\n    },\n    {\n      \"test_name\": \"test_max_discount\",\n      \"file\": \"test_discount_calc.py\",\n      \"message\": \"Expected 50.0, received 100.0\",\n      \"retry_count\": 0\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "get_recent_change_summary",
+            "args": {},
+            "output": "[\n  {\n    \"commit\": \"a81c2f4\",\n    \"files\": [\n      \"pricing/discount.py\"\n    ],\n    \"message\": \"Update discount calculation logic\"\n  },\n  {\n    \"commit\": \"7c9e210\",\n    \"files\": [\n      \"tests/test_discount_calc.py\"\n    ],\n    \"message\": \"Add discount calculation tests\"\n  }\n]",
+            "mode": "native"
+          }
+        ],
+        "tool_call_count": 3,
+        "evidence_lines": [
+          29,
+          30,
+          31,
+          32
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "B",
+    "expected_category": "DEPENDENCY_FAILURE",
+    "checks": {
+      "no_runtime_error": true,
+      "expected_category": true,
+      "two_distinct_tools": true,
+      "nonempty_evidence": true,
+      "likely_cause": true,
+      "next_step": true,
+      "reasoning": true,
+      "checklist_length": true
+    },
+    "decision": {
+      "agent_name": "LLM Agent",
+      "failure_category": "DEPENDENCY_FAILURE",
+      "evidence": [
+        "[2026-11-09 09:20:11] ERROR Could not find a version that satisfies the requirement numpy==3.0.1",
+        "[2026-11-09 09:20:11] ERROR No matching distribution found for numpy==3.0.1",
+        "[2026-11-09 09:20:12] ERROR Dependency installation failed",
+        "\"requirements.txt\","
+      ],
+      "likely_cause": "The dependency installation failed because the required version of numpy (3.0.1) is not available in PyPI.",
+      "next_step": "Update the requirements.txt to use a compatible version of numpy or check if the version exists in a private registry. Human action required",
+      "verification_checklist": [
+        "Confirm that the updated requirements.txt uses a valid numpy version",
+        "Re-run the pipeline to verify dependency installation passes",
+        "Check that build and test stages run without skipping"
+      ],
+      "reasoning": "Called 5 tool(s) (structured tool selection): get_pipeline_status, get_dependency_info, read_build_logs, get_recent_change_summary, get_test_results. The pipeline status shows dependency_install failed with an error message indicating numpy==3.0.1 is not found in PyPI (lines 47-49). The requirements.lock file was updated (line 53) but the required version of numpy (3.0.1) is not available, causing the failure.",
+      "confidence": 0.92,
+      "details": {
+        "model": "qwen3:4b",
+        "tool_mode": "structured",
+        "tool_calls": [
+          {
+            "tool": "get_pipeline_status",
+            "args": {},
+            "output": "{\n  \"pipeline_status\": {\n    \"run_id\": \"run-2026-1109-002\",\n    \"branch\": \"feature/data-processing\",\n    \"stages\": {\n      \"checkout\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 5\n      },\n      \"dependency_install\": {\n        \"status\": \"failed\",\n        \"duration_seconds\": 12\n      },\n      \"build\": {\n        \"status\": \"skipped\",\n        \"duration_seconds\": 0\n      },\n      \"unit_tests\": {\n        \"status\": \"skipped\",\n        \"duration_seconds\": 0\n      },\n      \"deployment\": {\n        \"status\": \"skipped\",\n        \"duration_seconds\": 0\n      }\n    }\n  },\n  \"deployment_health\": {\n    \"overall_status\": \"not_run\",\n    \"checks\": []\n  },\n  \"run_history\": [\n    {\n      \"run_id\": \"run-2026-1108-006\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1109-002\",\n      \"status\": \"failed\",\n      \"failed_tests\": []\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "get_dependency_info",
+            "args": {},
+            "output": "{\n  \"packages\": [\n    {\n      \"name\": \"numpy\",\n      \"required_version\": \"3.0.1\",\n      \"resolved_version\": null,\n      \"status\": \"not_found\"\n    },\n    {\n      \"name\": \"pandas\",\n      \"required_version\": \"2.2.0\",\n      \"resolved_version\": \"2.2.0\",\n      \"status\": \"ok\"\n    },\n    {\n      \"name\": \"pytest\",\n      \"required_version\": \"8.3.0\",\n      \"resolved_version\": \"8.3.0\",\n      \"status\": \"ok\"\n    }\n  ],\n  \"lockfile_changed\": true\n}",
+            "mode": "structured"
+          },
+          {
+            "tool": "read_build_logs",
+            "args": {},
+            "output": "[2026-11-09 09:20:01] INFO Checking out branch feature/data-processing\n[2026-11-09 09:20:06] INFO Starting dependency installation\n[2026-11-09 09:20:09] INFO Reading requirements.txt\n[2026-11-09 09:20:11] ERROR Could not find a version that satisfies the requirement numpy==3.0.1\n[2026-11-09 09:20:11] ERROR No matching distribution found for numpy==3.0.1\n[2026-11-09 09:20:12] ERROR Dependency installation failed\n[2026-11-09 09:20:13] INFO Build and test stages skipped",
+            "mode": "structured"
+          },
+          {
+            "tool": "get_recent_change_summary",
+            "args": {},
+            "output": "[\n  {\n    \"commit\": \"b72d193\",\n    \"files\": [\n      \"requirements.txt\",\n      \"requirements.lock\"\n    ],\n    \"message\": \"Update project dependency versions\"\n  },\n  {\n    \"commit\": \"c41a82e\",\n    \"files\": [\n      \"src/data_processor.py\"\n    ],\n    \"message\": \"Add data processing functionality\"\n  }\n]",
+            "mode": "structured"
+          },
+          {
+            "tool": "get_test_results",
+            "args": {},
+            "output": "{\n  \"total\": 0,\n  \"passed\": 0,\n  \"failed\": 0,\n  \"failures\": []\n}",
+            "mode": "structured"
+          }
+        ],
+        "tool_call_count": 5,
+        "evidence_lines": [
+          47,
+          48,
+          49,
+          53
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "C",
+    "expected_category": "DEPLOYMENT_HEALTH_FAILURE",
+    "checks": {
+      "no_runtime_error": true,
+      "expected_category": true,
+      "two_distinct_tools": true,
+      "nonempty_evidence": true,
+      "likely_cause": true,
+      "next_step": true,
+      "reasoning": true,
+      "checklist_length": true
+    },
+    "decision": {
+      "agent_name": "LLM Agent",
+      "failure_category": "DEPLOYMENT_HEALTH_FAILURE",
+      "evidence": [
+        "\"name\": \"/ready\",",
+        "\"status_code\": 503,",
+        "\"failed_tests\": []",
+        "[2026-11-10 11:31:09] ERROR Readiness probe failed: database connection pool unavailable"
+      ],
+      "likely_cause": "The database connection pool is unavailable due to recent changes in the database configuration and connection handling code.",
+      "next_step": "Review the recent changes to the database configuration files and connection logic. Human action required",
+      "verification_checklist": [
+        "Check if the database connection pool is healthy after applying the fix",
+        "Verify that the /health endpoint returns HTTP 200 status",
+        "Confirm that the readiness probe passes without errors"
+      ],
+      "reasoning": "Called 3 tool(s) (native tool selection): get_pipeline_status, read_build_logs, get_recent_change_summary. The deployment health checks show two failed endpoints (/health and /ready) with HTTP 503 status, indicating a database connection pool issue. The recent changes to config/database.yaml (adjusting connection pool settings) and src/database.py (improving connection handling) suggest the problem is related to these modifications.",
+      "confidence": 0.9,
+      "details": {
+        "model": "qwen3:4b",
+        "tool_mode": "native",
+        "tool_calls": [
+          {
+            "tool": "get_pipeline_status",
+            "args": {},
+            "output": "{\n  \"pipeline_status\": {\n    \"run_id\": \"run-2026-1110-003\",\n    \"branch\": \"feature/database-pool\",\n    \"stages\": {\n      \"checkout\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 4\n      },\n      \"dependency_install\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 16\n      },\n      \"build\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 29\n      },\n      \"unit_tests\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 35\n      },\n      \"deployment\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 42\n      }\n    }\n  },\n  \"deployment_health\": {\n    \"overall_status\": \"unhealthy\",\n    \"checks\": [\n      {\n        \"name\": \"/health\",\n        \"status_code\": 503,\n        \"passed\": false,\n        \"detail\": \"Service unavailable\"\n      },\n      {\n        \"name\": \"/ready\",\n        \"status_code\": 503,\n        \"passed\": false,\n        \"detail\": \"Database connection pool unavailable\"\n      }\n    ]\n  },\n  \"run_history\": [\n    {\n      \"run_id\": \"run-2026-1109-005\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1110-003\",\n      \"status\": \"failed\",\n      \"failed_tests\": []\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "read_build_logs",
+            "args": {},
+            "output": "[2026-11-10 11:30:01] INFO Checking out branch feature/database-pool\n[2026-11-10 11:30:05] INFO Dependencies installed successfully\n[2026-11-10 11:30:21] INFO Build completed successfully\n[2026-11-10 11:30:22] INFO Unit tests: 50 passed, 0 failed\n[2026-11-10 11:31:02] INFO Deployment completed successfully\n[2026-11-10 11:31:05] INFO Running deployment health checks\n[2026-11-10 11:31:07] ERROR GET /health returned HTTP 503\n[2026-11-10 11:31:09] ERROR Readiness probe failed: database connection pool unavailable\n[2026-11-10 11:31:10] ERROR Application is not healthy after deployment",
+            "mode": "native"
+          },
+          {
+            "tool": "get_recent_change_summary",
+            "args": {},
+            "output": "[\n  {\n    \"commit\": \"d31e8a9\",\n    \"files\": [\n      \"config/database.yaml\"\n    ],\n    \"message\": \"Adjust database connection pool settings\"\n  },\n  {\n    \"commit\": \"a20f4c1\",\n    \"files\": [\n      \"src/database.py\"\n    ],\n    \"message\": \"Improve database connection handling\"\n  }\n]",
+            "mode": "native"
+          }
+        ],
+        "tool_call_count": 3,
+        "evidence_lines": [
+          27,
+          28,
+          34,
+          45
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "D",
+    "expected_category": "NO_FAILURE",
+    "checks": {
+      "no_runtime_error": true,
+      "expected_category": true,
+      "two_distinct_tools": true,
+      "nonempty_evidence": true,
+      "likely_cause": true,
+      "next_step": true,
+      "reasoning": true,
+      "checklist_length": true
+    },
+    "decision": {
+      "agent_name": "LLM Agent",
+      "failure_category": "NO_FAILURE",
+      "evidence": [
+        "\"name\": \"/ready\",",
+        "\"run_history\": [",
+        "[2026-11-10 14:01:02] INFO GET /health returned HTTP 200",
+        "[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings"
+      ],
+      "likely_cause": "All stages passed with healthy health checks. No failures detected in the pipeline run.",
+      "next_step": "Confirm no issues by checking production environment and monitoring tools for any anomalies. Human action required",
+      "verification_checklist": [
+        "Verify that all health endpoints (/health and /ready) return 200 OK status",
+        "Check application logs for any recent errors or warnings",
+        "Ensure the deployment was successful in the target environment",
+        "Validate user-reported functionality matches expectations"
+      ],
+      "reasoning": "Called 2 tool(s) (native tool selection): get_pipeline_status, read_build_logs. The pipeline run shows all stages passed (checkout, dependency_install, build, unit_tests, deployment) with health checks reporting 200 status for both /health and /ready endpoints. The run history shows no failed tests across multiple runs. The logs indicate successful completion without errors.",
+      "confidence": 1.0,
+      "details": {
+        "model": "qwen3:4b",
+        "tool_mode": "native",
+        "tool_calls": [
+          {
+            "tool": "get_pipeline_status",
+            "args": {},
+            "output": "{\n  \"pipeline_status\": {\n    \"run_id\": \"run-2026-1110-004\",\n    \"branch\": \"main\",\n    \"stages\": {\n      \"checkout\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 4\n      },\n      \"dependency_install\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 15\n      },\n      \"build\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 27\n      },\n      \"unit_tests\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 38\n      },\n      \"deployment\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 41\n      }\n    }\n  },\n  \"deployment_health\": {\n    \"overall_status\": \"healthy\",\n    \"checks\": [\n      {\n        \"name\": \"/health\",\n        \"status_code\": 200,\n        \"passed\": true,\n        \"detail\": \"Service healthy\"\n      },\n      {\n        \"name\": \"/ready\",\n        \"status_code\": 200,\n        \"passed\": true,\n        \"detail\": \"Application ready\"\n      }\n    ]\n  },\n  \"run_history\": [\n    {\n      \"run_id\": \"run-2026-1109-007\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1110-004\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "read_build_logs",
+            "args": {},
+            "output": "[2026-11-10 14:00:01] INFO Checking out branch main\n[2026-11-10 14:00:05] INFO Dependencies installed successfully\n[2026-11-10 14:00:20] INFO Build completed successfully\n[2026-11-10 14:00:21] INFO Unit tests: 60 passed, 0 failed\n[2026-11-10 14:00:59] INFO Deployment completed successfully\n[2026-11-10 14:01:02] INFO GET /health returned HTTP 200\n[2026-11-10 14:01:04] INFO GET /ready returned HTTP 200\n[2026-11-10 14:01:05] INFO Pipeline completed successfully with no warnings",
+            "mode": "native"
+          }
+        ],
+        "tool_call_count": 2,
+        "evidence_lines": [
+          27,
+          31,
+          43,
+          45
+        ]
+      }
+    }
+  },
+  {
+    "scenario": "E",
+    "expected_category": "AMBIGUOUS",
+    "checks": {
+      "no_runtime_error": true,
+      "expected_category": true,
+      "two_distinct_tools": true,
+      "nonempty_evidence": true,
+      "likely_cause": true,
+      "next_step": true,
+      "reasoning": true,
+      "checklist_length": true
+    },
+    "decision": {
+      "agent_name": "LLM Agent",
+      "failure_category": "AMBIGUOUS",
+      "evidence": [
+        "\"test_name\": \"test_api_timeout\",",
+        "\"file\": \"test_api_timeout.py\",",
+        "\"message\": \"Request timed out after 5 seconds\",",
+        "\"retry_passed\": true"
+      ],
+      "likely_cause": "The test_api_timeout is flaky due to network timing issues, as it failed once but passed on retry. The deprecation warning suggests potential API changes might be affecting the timeout behavior.",
+      "next_step": "Check if the flaky test has been fixed by reviewing the recent change in documentation and ensuring network stability during tests. Human action required",
+      "verification_checklist": [
+        "Confirm the test_api_timeout passes without retries after the fix",
+        "Ensure no deprecation warnings appear in the build logs",
+        "Validate that the documentation changes did not introduce network-related issues"
+      ],
+      "reasoning": "Called 5 tool(s) (structured tool selection): get_pipeline_status, get_test_results, get_recent_change_summary, read_build_logs, get_dependency_info. The pipeline failed unit tests but the test passed on retry with a flaky label. The evidence shows one failure (test_api_timeout) that was retried and succeeded, indicating it's flaky rather than consistently failing. The deprecation warning about legacy API suggests possible incompatibility, but since the test passed after retry, this is not a consistent failure pattern.",
+      "confidence": 0.75,
+      "details": {
+        "model": "qwen3:4b",
+        "tool_mode": "structured",
+        "tool_calls": [
+          {
+            "tool": "get_pipeline_status",
+            "args": {},
+            "output": "{\n  \"pipeline_status\": {\n    \"run_id\": \"run-2026-1110-005\",\n    \"branch\": \"feature/documentation-update\",\n    \"stages\": {\n      \"checkout\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 4\n      },\n      \"dependency_install\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 16\n      },\n      \"build\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 28\n      },\n      \"unit_tests\": {\n        \"status\": \"failed\",\n        \"duration_seconds\": 43\n      },\n      \"deployment\": {\n        \"status\": \"skipped\",\n        \"duration_seconds\": 0\n      }\n    }\n  },\n  \"deployment_health\": {\n    \"overall_status\": \"not_run\",\n    \"checks\": []\n  },\n  \"run_history\": [\n    {\n      \"run_id\": \"run-2026-1110-002\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1110-003\",\n      \"status\": \"failed\",\n      \"failed_tests\": [\n        \"test_api_timeout\"\n      ]\n    },\n    {\n      \"run_id\": \"run-2026-1110-004\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1110-005\",\n      \"status\": \"unstable\",\n      \"failed_tests\": [\n        \"test_api_timeout\"\n      ]\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "get_test_results",
+            "args": {},
+            "output": "{\n  \"total\": 40,\n  \"passed\": 40,\n  \"failed\": 0,\n  \"failures\": [\n    {\n      \"test_name\": \"test_api_timeout\",\n      \"file\": \"test_api_timeout.py\",\n      \"message\": \"Request timed out after 5 seconds\",\n      \"retry_count\": 1,\n      \"retry_passed\": true\n    }\n  ]\n}",
+            "mode": "structured"
+          },
+          {
+            "tool": "get_recent_change_summary",
+            "args": {},
+            "output": "[\n  {\n    \"commit\": \"f81a3c2\",\n    \"files\": [\n      \"docs/api_usage.md\"\n    ],\n    \"message\": \"Update API usage documentation\"\n  },\n  {\n    \"commit\": \"b72c4d9\",\n    \"files\": [\n      \"README.md\"\n    ],\n    \"message\": \"Clarify project setup instructions\"\n  }\n]",
+            "mode": "structured"
+          },
+          {
+            "tool": "read_build_logs",
+            "args": {},
+            "output": "[2026-11-10 16:10:01] INFO Checking out branch feature/documentation-update\n[2026-11-10 16:10:05] INFO Dependencies installed successfully\n[2026-11-10 16:10:21] INFO Build completed successfully\n[2026-11-10 16:10:22] INFO Starting unit tests\n[2026-11-10 16:10:31] WARNING DeprecationWarning: legacy API will be removed in a future release\n[2026-11-10 16:10:35] FAILED test_api_timeout.py::test_api_timeout - Request timed out after 5 seconds\n[2026-11-10 16:10:40] INFO Retrying failed test\n[2026-11-10 16:10:44] PASSED test_api_timeout.py::test_api_timeout on retry\n[2026-11-10 16:10:45] WARNING Flaky test detected: test_api_timeout\n[2026-11-10 16:10:46] INFO Final test status: 1 initial failure, 1 retry passed\n[2026-11-10 16:10:47] INFO Pipeline marked unstable",
+            "mode": "structured"
+          },
+          {
+            "tool": "get_dependency_info",
+            "args": {},
+            "output": "{\n  \"packages\": [\n    {\n      \"name\": \"requests\",\n      \"required_version\": \"2.32.0\",\n      \"resolved_version\": \"2.32.0\",\n      \"status\": \"ok\"\n    },\n    {\n      \"name\": \"pytest\",\n      \"required_version\": \"8.3.0\",\n      \"resolved_version\": \"8.3.0\",\n      \"status\": \"ok\"\n    }\n  ],\n  \"lockfile_changed\": false\n}",
+            "mode": "structured"
+          }
+        ],
+        "tool_call_count": 5,
+        "evidence_lines": [
+          42,
+          43,
+          44,
+          46
+        ]
+      }
+    }
+  }
+]
