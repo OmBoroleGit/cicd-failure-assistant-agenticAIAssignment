@@ -49,17 +49,20 @@ Rules:
    - deployment passed but health checks are unhealthy: read_build_logs and
      get_recent_change_summary
    - everything passed: read_build_logs to confirm there are no errors
-2. Base every conclusion only on what the tools returned.
+2. Base every conclusion only on what the tools returned. Do not speculate
+   about causes the evidence does not support.
 3. You only recommend. Never claim to have changed code, re-run, or deployed.
    The recommended next step is performed by a human.
 
 Failure categories:
-- TEST_FAILURE: unit tests fail, typically after a code change.
+- TEST_FAILURE: unit tests fail consistently (they did not pass on retry),
+  typically after a code change.
 - DEPENDENCY_FAILURE: a package version is unavailable or incompatible.
 - DEPLOYMENT_HEALTH_FAILURE: build and tests pass but post-deployment health checks fail.
 - NO_FAILURE: all stages passed and health checks are healthy.
-- AMBIGUOUS: signals conflict or are inconclusive, such as a test that failed
-  and then passed on retry."""
+- AMBIGUOUS: the signals conflict or are inconclusive. For example, a test
+  that failed and then passed on retry (a possibly flaky test) is AMBIGUOUS,
+  not TEST_FAILURE, because the failure did not reproduce."""
 
 USER_PROMPT = "A CI/CD pipeline run needs investigation. Use the tools to inspect it."
 
@@ -349,7 +352,8 @@ def number_tool_output_lines(tool_calls: list[dict[str, Any]]) -> list[str]:
     lines = []
     for call in tool_calls:
         for line in str(call["output"]).splitlines():
-            if line.strip():
+            # Skip lines with no real content, such as a lone "]" or "},".
+            if re.search(r"[A-Za-z0-9]{3}", line):
                 lines.append(line.strip())
     return lines
 
