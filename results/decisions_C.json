@@ -1,0 +1,423 @@
+{
+  "scenario": "C",
+  "analysis_run_at": "2026-11-15T17:26:49+00:00",
+  "decisions": [
+    {
+      "agent_name": "Simple Reflex Agent",
+      "failure_category": "DEPLOYMENT_HEALTH_FAILURE",
+      "evidence": [
+        "Service unavailable",
+        "Database connection pool unavailable",
+        "[2026-11-10 11:31:07] ERROR GET /health returned HTTP 503",
+        "[2026-11-10 11:31:09] ERROR Readiness probe failed: database connection pool unavailable",
+        "[2026-11-10 11:31:10] ERROR Application is not healthy after deployment"
+      ],
+      "likely_cause": "The deployment is unhealthy even though the build and test stages did not report a failure.",
+      "next_step": "Inspect the unhealthy deployment checks and service logs before considering another deployment. Human action required",
+      "verification_checklist": [
+        "Inspect failed health-check endpoints.",
+        "Review application and service logs.",
+        "Check dependent services.",
+        "Rerun health checks after the correction."
+      ],
+      "reasoning": "The current deployment health data reports an unhealthy service or failed health check.",
+      "confidence": 0.95,
+      "details": {
+        "rule_fired": "DEPLOYMENT_HEALTH_FAILURE_RULE",
+        "failed_stages": [],
+        "failed_test_count": 0
+      }
+    },
+    {
+      "agent_name": "Model-Based Reflex Agent",
+      "failure_category": "DEPLOYMENT_HEALTH_FAILURE",
+      "evidence": [
+        "/health",
+        "503",
+        "Service unavailable",
+        "/ready",
+        "503",
+        "Database connection pool unavailable",
+        "config/database.yaml",
+        "src/database.py"
+      ],
+      "likely_cause": "Build and test results must be distinguished from deployment health. The deployed application is unhealthy.",
+      "next_step": "Ask the deployment owner to inspect recent configuration changes and investigate the failing health checks. Human action required",
+      "verification_checklist": [
+        "Inspect failed deployment health endpoints.",
+        "Review recently changed configuration files.",
+        "Check database connectivity and connection pool settings.",
+        "Rerun readiness and health checks after correction."
+      ],
+      "reasoning": "Updated internal state using current pipeline observations, recent changes and run history. Last successful run: run-2026-1109-005. Changed files: ['config/database.yaml', 'src/database.py']. Historical failed tests: []. Flaky tests: []. Selected rule: DEPLOYMENT_HISTORY_RULE.",
+      "confidence": 0.95,
+      "details": {
+        "internal_state": {
+          "current_failed_stages": [],
+          "last_successful_run": "run-2026-1109-005",
+          "changed_files": [
+            "config/database.yaml",
+            "src/database.py"
+          ],
+          "historical_failed_tests": [],
+          "flaky_tests": [],
+          "repeated_failures": [],
+          "unstable_runs": [],
+          "lockfile_changed": false
+        },
+        "rule_fired": "DEPLOYMENT_HISTORY_RULE"
+      }
+    },
+    {
+      "agent_name": "Goal-Based Agent",
+      "failure_category": "DEPLOYMENT_HEALTH_FAILURE",
+      "evidence": [
+        "config/database.yaml",
+        "src/database.py",
+        "Service unavailable",
+        "Database connection pool unavailable"
+      ],
+      "likely_cause": "A recent configuration change made the deployed service unhealthy.",
+      "next_step": "Review the recent configuration change and compare it with the last healthy release. Human action required",
+      "verification_checklist": [
+        "/health returns HTTP 200.",
+        "/ready returns HTTP 200.",
+        "No ERROR lines after deployment in the log."
+      ],
+      "reasoning": "Goal: identify the root cause with enough evidence. Breadth-first search explored 18 plans. Shortest plan that reaches the goal: check_pipeline_status -> get_recent_changes -> check_deployment_health. It proves DEPLOYMENT_HEALTH_FAILURE because these facts were found: all_stages_passed, deployment_unhealthy, config_changed.",
+      "confidence": 0.9,
+      "details": {
+        "goal": "root cause identified with enough evidence",
+        "plan": [
+          "check_pipeline_status",
+          "get_recent_changes",
+          "check_deployment_health"
+        ],
+        "facts_found": [
+          "all_stages_passed",
+          "config_changed",
+          "deployment_unhealthy",
+          "pipeline_checked",
+          "source_code_changed"
+        ],
+        "plans_explored": 18
+      }
+    },
+    {
+      "agent_name": "Utility-Based Agent",
+      "failure_category": "DEPLOYMENT_HEALTH_FAILURE",
+      "evidence": [
+        "Service unavailable",
+        "Database connection pool unavailable",
+        "[2026-11-10 11:31:07] ERROR GET /health returned HTTP 503",
+        "config/database.yaml"
+      ],
+      "likely_cause": "A recent configuration change made the deployed service unhealthy.",
+      "next_step": "Roll back the recent configuration change and re-check the health endpoints. Human action required",
+      "verification_checklist": [
+        "/health returns HTTP 200.",
+        "/ready returns HTTP 200.",
+        "No ERROR lines after deployment in the log."
+      ],
+      "reasoning": "Utility = P(resolves issue) x impact - time cost - risk. Evidence gives these probabilities: {'TEST_FAILURE': 0.0, 'DEPENDENCY_FAILURE': 0.0, 'DEPLOYMENT_HEALTH_FAILURE': 1.0, 'AMBIGUOUS': 0.0, 'NO_FAILURE': 0.0}. Scores: Roll back the recent configuration change and re-check the health endpoints = 5.0; Escalate for a full manual investigation = -0.4; Approve the release with no changes = -1.0; Re-run the flaky test several times in a controlled way = -1.5; Pin an available version of the failing package in the requirements file = -3.0; Compare the failing tests with the recent code change and fix it locally = -4.5. Winner: 'Roll back the recent configuration change and re-check the health endpoints' with utility 5.0.",
+      "confidence": 1.0,
+      "details": {
+        "probabilities": {
+          "TEST_FAILURE": 0.0,
+          "DEPENDENCY_FAILURE": 0.0,
+          "DEPLOYMENT_HEALTH_FAILURE": 1.0,
+          "AMBIGUOUS": 0.0,
+          "NO_FAILURE": 0.0
+        },
+        "utility_scores": [
+          {
+            "step": "Roll back the recent configuration change and re-check the health endpoints",
+            "fixes": "DEPLOYMENT_HEALTH_FAILURE",
+            "impact": 9,
+            "time_cost": 2,
+            "risk": 2,
+            "p_resolves": 1.0,
+            "utility": 5.0
+          },
+          {
+            "step": "Escalate for a full manual investigation",
+            "fixes": "ANY",
+            "impact": 9,
+            "time_cost": 8,
+            "risk": 0.5,
+            "p_resolves": 0.9,
+            "utility": -0.4
+          },
+          {
+            "step": "Approve the release with no changes",
+            "fixes": "NO_FAILURE",
+            "impact": 5,
+            "time_cost": 0,
+            "risk": 1,
+            "p_resolves": 0.0,
+            "utility": -1.0
+          },
+          {
+            "step": "Re-run the flaky test several times in a controlled way",
+            "fixes": "AMBIGUOUS",
+            "impact": 6,
+            "time_cost": 1,
+            "risk": 0.5,
+            "p_resolves": 0.0,
+            "utility": -1.5
+          },
+          {
+            "step": "Pin an available version of the failing package in the requirements file",
+            "fixes": "DEPENDENCY_FAILURE",
+            "impact": 9,
+            "time_cost": 2,
+            "risk": 1,
+            "p_resolves": 0.0,
+            "utility": -3.0
+          },
+          {
+            "step": "Compare the failing tests with the recent code change and fix it locally",
+            "fixes": "TEST_FAILURE",
+            "impact": 9,
+            "time_cost": 4,
+            "risk": 0.5,
+            "p_resolves": 0.0,
+            "utility": -4.5
+          }
+        ],
+        "winner": "Roll back the recent configuration change and re-check the health endpoints"
+      }
+    },
+    {
+      "agent_name": "Learning Agent",
+      "failure_category": "DEPLOYMENT_HEALTH_FAILURE",
+      "evidence": [
+        "Service unavailable",
+        "Database connection pool unavailable"
+      ],
+      "likely_cause": "A recent configuration change made the deployed service unhealthy.",
+      "next_step": "Roll back the recent configuration change. Human action required",
+      "verification_checklist": [
+        "/health returns HTTP 200.",
+        "/ready returns HTTP 200.",
+        "No ERROR lines after deployment in the log."
+      ],
+      "reasoning": "Detected category DEPLOYMENT_HEALTH_FAILURE. Stored experience for this category: 'Roll back the recent configuration change': 7 of 9 successes (rate 0.73); 'Restart the application pods': 2 of 6 successes (rate 0.38). Chose 'Roll back the recent configuration change' because it has the best smoothed success rate (s+1)/(s+f+2). No feedback recorded yet for this category.",
+      "confidence": 0.73,
+      "details": {
+        "experience_counts": {
+          "Roll back the recent configuration change": {
+            "successes": 7,
+            "failures": 2
+          },
+          "Restart the application pods": {
+            "successes": 2,
+            "failures": 4
+          }
+        },
+        "success_rates": {
+          "Roll back the recent configuration change": 0.73,
+          "Restart the application pods": 0.38
+        },
+        "chosen_action": "Roll back the recent configuration change",
+        "last_update": {
+          "category": "AMBIGUOUS",
+          "action": "Check the flaky test for timing or network dependence",
+          "success": false,
+          "rate_before": 0.58,
+          "rate_after": 0.54
+        }
+      }
+    },
+    {
+      "agent_name": "LLM Agent",
+      "failure_category": "DEPLOYMENT_HEALTH_FAILURE",
+      "evidence": [
+        "\"name\": \"/ready\",",
+        "\"status_code\": 503,",
+        "\"failed_tests\": []",
+        "[2026-11-10 11:31:09] ERROR Readiness probe failed: database connection pool unavailable"
+      ],
+      "likely_cause": "The database connection pool is unavailable due to recent changes in the database configuration and connection handling code.",
+      "next_step": "Review the recent changes to the database configuration files and connection logic. Human action required",
+      "verification_checklist": [
+        "Check if the database connection pool is healthy after applying the fix",
+        "Verify that the /health endpoint returns HTTP 200 status",
+        "Confirm that the readiness probe passes without errors"
+      ],
+      "reasoning": "Called 3 tool(s) (native tool selection): get_pipeline_status, read_build_logs, get_recent_change_summary. The deployment health checks show two failed endpoints (/health and /ready) with HTTP 503 status, indicating a database connection pool issue. The recent changes to config/database.yaml (adjusting connection pool settings) and src/database.py (improving connection handling) suggest the problem is related to these modifications.",
+      "confidence": 0.9,
+      "details": {
+        "model": "qwen3:4b",
+        "tool_mode": "native",
+        "tool_calls": [
+          {
+            "tool": "get_pipeline_status",
+            "args": {},
+            "output": "{\n  \"pipeline_status\": {\n    \"run_id\": \"run-2026-1110-003\",\n    \"branch\": \"feature/database-pool\",\n    \"stages\": {\n      \"checkout\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 4\n      },\n      \"dependency_install\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 16\n      },\n      \"build\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 29\n      },\n      \"unit_tests\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 35\n      },\n      \"deployment\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 42\n      }\n    }\n  },\n  \"deployment_health\": {\n    \"overall_status\": \"unhealthy\",\n    \"checks\": [\n      {\n        \"name\": \"/health\",\n        \"status_code\": 503,\n        \"passed\": false,\n        \"detail\": \"Service unavailable\"\n      },\n      {\n        \"name\": \"/ready\",\n        \"status_code\": 503,\n        \"passed\": false,\n        \"detail\": \"Database connection pool unavailable\"\n      }\n    ]\n  },\n  \"run_history\": [\n    {\n      \"run_id\": \"run-2026-1109-005\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1110-003\",\n      \"status\": \"failed\",\n      \"failed_tests\": []\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "read_build_logs",
+            "args": {},
+            "output": "[2026-11-10 11:30:01] INFO Checking out branch feature/database-pool\n[2026-11-10 11:30:05] INFO Dependencies installed successfully\n[2026-11-10 11:30:21] INFO Build completed successfully\n[2026-11-10 11:30:22] INFO Unit tests: 50 passed, 0 failed\n[2026-11-10 11:31:02] INFO Deployment completed successfully\n[2026-11-10 11:31:05] INFO Running deployment health checks\n[2026-11-10 11:31:07] ERROR GET /health returned HTTP 503\n[2026-11-10 11:31:09] ERROR Readiness probe failed: database connection pool unavailable\n[2026-11-10 11:31:10] ERROR Application is not healthy after deployment",
+            "mode": "native"
+          },
+          {
+            "tool": "get_recent_change_summary",
+            "args": {},
+            "output": "[\n  {\n    \"commit\": \"d31e8a9\",\n    \"files\": [\n      \"config/database.yaml\"\n    ],\n    \"message\": \"Adjust database connection pool settings\"\n  },\n  {\n    \"commit\": \"a20f4c1\",\n    \"files\": [\n      \"src/database.py\"\n    ],\n    \"message\": \"Improve database connection handling\"\n  }\n]",
+            "mode": "native"
+          }
+        ],
+        "tool_call_count": 3,
+        "evidence_lines": [
+          27,
+          28,
+          34,
+          45
+        ]
+      }
+    }
+  ],
+  "evidence_checks": {
+    "Simple Reflex Agent": {
+      "items": [
+        {
+          "evidence": "Service unavailable",
+          "found": true
+        },
+        {
+          "evidence": "Database connection pool unavailable",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 11:31:07] ERROR GET /health returned HTTP 503",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 11:31:09] ERROR Readiness probe failed: database connection pool unavailable",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 11:31:10] ERROR Application is not healthy after deployment",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Model-Based Reflex Agent": {
+      "items": [
+        {
+          "evidence": "/health",
+          "found": true
+        },
+        {
+          "evidence": "503",
+          "found": true
+        },
+        {
+          "evidence": "Service unavailable",
+          "found": true
+        },
+        {
+          "evidence": "/ready",
+          "found": true
+        },
+        {
+          "evidence": "503",
+          "found": true
+        },
+        {
+          "evidence": "Database connection pool unavailable",
+          "found": true
+        },
+        {
+          "evidence": "config/database.yaml",
+          "found": true
+        },
+        {
+          "evidence": "src/database.py",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Goal-Based Agent": {
+      "items": [
+        {
+          "evidence": "config/database.yaml",
+          "found": true
+        },
+        {
+          "evidence": "src/database.py",
+          "found": true
+        },
+        {
+          "evidence": "Service unavailable",
+          "found": true
+        },
+        {
+          "evidence": "Database connection pool unavailable",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Utility-Based Agent": {
+      "items": [
+        {
+          "evidence": "Service unavailable",
+          "found": true
+        },
+        {
+          "evidence": "Database connection pool unavailable",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 11:31:07] ERROR GET /health returned HTTP 503",
+          "found": true
+        },
+        {
+          "evidence": "config/database.yaml",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Learning Agent": {
+      "items": [
+        {
+          "evidence": "Service unavailable",
+          "found": true
+        },
+        {
+          "evidence": "Database connection pool unavailable",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "LLM Agent": {
+      "items": [
+        {
+          "evidence": "\"name\": \"/ready\",",
+          "found": true
+        },
+        {
+          "evidence": "\"status_code\": 503,",
+          "found": true
+        },
+        {
+          "evidence": "\"failed_tests\": []",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-10 11:31:09] ERROR Readiness probe failed: database connection pool unavailable",
+          "found": true
+        }
+      ],
+      "verified": true
+    }
+  }
+}

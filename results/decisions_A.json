@@ -1,0 +1,457 @@
+{
+  "scenario": "A",
+  "analysis_run_at": "2026-11-15T17:16:54+00:00",
+  "decisions": [
+    {
+      "agent_name": "Simple Reflex Agent",
+      "failure_category": "TEST_FAILURE",
+      "evidence": [
+        "[2026-11-08 10:14:31] FAILED test_discount_calc.py::test_discount_calc - Expected 90.0, received 100.0",
+        "[2026-11-08 10:14:34] FAILED test_discount_calc.py::test_zero_discount - Expected 100.0, received 0.0",
+        "[2026-11-08 10:14:38] FAILED test_discount_calc.py::test_max_discount - Expected 50.0, received 100.0",
+        "[2026-11-08 10:14:45] ERROR 3 tests failed, 47 passed",
+        "[2026-11-08 10:14:46] ERROR Pipeline stopped after unit test failure"
+      ],
+      "likely_cause": "One or more automated tests or pipeline stages failed.",
+      "next_step": "Inspect the failed tests and related code changes, then correct the underlying issue. Human action required",
+      "verification_checklist": [
+        "Inspect the failed test cases.",
+        "Review recent code changes.",
+        "Apply the required correction.",
+        "Rerun the test suite and pipeline."
+      ],
+      "reasoning": "The current pipeline percept reports failed tests or a failed pipeline stage.",
+      "confidence": 0.95,
+      "details": {
+        "rule_fired": "TEST_FAILURE_RULE",
+        "failed_stages": [
+          "unit_tests"
+        ],
+        "failed_test_count": 3
+      }
+    },
+    {
+      "agent_name": "Model-Based Reflex Agent",
+      "failure_category": "TEST_FAILURE",
+      "evidence": [
+        "test_discount_calc",
+        "Expected 90.0, received 100.0",
+        "test_zero_discount",
+        "Expected 100.0, received 0.0",
+        "test_max_discount",
+        "Expected 50.0, received 100.0",
+        "pricing/discount.py",
+        "tests/test_discount_calc.py",
+        "run-2026-1107-004"
+      ],
+      "likely_cause": "The current pipeline contains failed unit tests. Recent source changes should be investigated to identify the likely regression.",
+      "next_step": "Ask the developer to compare the failing tests with the recent source changes and investigate the regression. Human action required",
+      "verification_checklist": [
+        "Identify the failing test assertions.",
+        "Compare recent source changes with the last successful run.",
+        "Reproduce the failure locally.",
+        "Review and apply the proposed correction.",
+        "Rerun the complete unit test suite."
+      ],
+      "reasoning": "Updated internal state using current pipeline observations, recent changes and run history. Last successful run: run-2026-1107-004. Changed files: ['pricing/discount.py', 'tests/test_discount_calc.py']. Historical failed tests: ['test_discount_calc', 'test_zero_discount', 'test_max_discount']. Flaky tests: []. Selected rule: TEST_HISTORY_RULE.",
+      "confidence": 0.95,
+      "details": {
+        "internal_state": {
+          "current_failed_stages": [
+            "unit_tests"
+          ],
+          "last_successful_run": "run-2026-1107-004",
+          "changed_files": [
+            "pricing/discount.py",
+            "tests/test_discount_calc.py"
+          ],
+          "historical_failed_tests": [
+            "test_discount_calc",
+            "test_zero_discount",
+            "test_max_discount"
+          ],
+          "flaky_tests": [],
+          "repeated_failures": [],
+          "unstable_runs": [],
+          "lockfile_changed": false
+        },
+        "rule_fired": "TEST_HISTORY_RULE"
+      }
+    },
+    {
+      "agent_name": "Goal-Based Agent",
+      "failure_category": "TEST_FAILURE",
+      "evidence": [
+        "Expected 90.0, received 100.0",
+        "Expected 100.0, received 0.0",
+        "Expected 50.0, received 100.0",
+        "pricing/discount.py"
+      ],
+      "likely_cause": "A recent source code change broke the failing unit tests.",
+      "next_step": "Review the recent source change against the failing tests and reproduce the failure locally. Human action required",
+      "verification_checklist": [
+        "Failing tests pass locally.",
+        "Full unit test suite passes in the pipeline.",
+        "No new test failures appear."
+      ],
+      "reasoning": "Goal: identify the root cause with enough evidence. Breadth-first search explored 13 plans. Shortest plan that reaches the goal: check_pipeline_status -> get_test_results -> get_recent_changes. It proves TEST_FAILURE because these facts were found: test_stage_failed, tests_failed, source_code_changed.",
+      "confidence": 0.9,
+      "details": {
+        "goal": "root cause identified with enough evidence",
+        "plan": [
+          "check_pipeline_status",
+          "get_test_results",
+          "get_recent_changes"
+        ],
+        "facts_found": [
+          "pipeline_checked",
+          "source_code_changed",
+          "test_stage_failed",
+          "tests_checked",
+          "tests_failed"
+        ],
+        "plans_explored": 13
+      }
+    },
+    {
+      "agent_name": "Utility-Based Agent",
+      "failure_category": "TEST_FAILURE",
+      "evidence": [
+        "Expected 90.0, received 100.0",
+        "Expected 100.0, received 0.0",
+        "Expected 50.0, received 100.0",
+        "[2026-11-08 10:14:31] FAILED test_discount_calc.py::test_discount_calc - Expected 90.0, received 100.0",
+        "[2026-11-08 10:14:34] FAILED test_discount_calc.py::test_zero_discount - Expected 100.0, received 0.0",
+        "[2026-11-08 10:14:38] FAILED test_discount_calc.py::test_max_discount - Expected 50.0, received 100.0",
+        "pricing/discount.py"
+      ],
+      "likely_cause": "A recent source code change broke the failing unit tests.",
+      "next_step": "Compare the failing tests with the recent code change and fix it locally. Human action required",
+      "verification_checklist": [
+        "Failing tests pass locally.",
+        "Full unit test suite passes in the pipeline.",
+        "No new test failures appear."
+      ],
+      "reasoning": "Utility = P(resolves issue) x impact - time cost - risk. Evidence gives these probabilities: {'TEST_FAILURE': 1.0, 'DEPENDENCY_FAILURE': 0.0, 'DEPLOYMENT_HEALTH_FAILURE': 0.0, 'AMBIGUOUS': 0.0, 'NO_FAILURE': 0.0}. Scores: Compare the failing tests with the recent code change and fix it locally = 4.5; Escalate for a full manual investigation = -0.4; Approve the release with no changes = -1.0; Re-run the flaky test several times in a controlled way = -1.5; Pin an available version of the failing package in the requirements file = -3.0; Roll back the recent configuration change and re-check the health endpoints = -4.0. Winner: 'Compare the failing tests with the recent code change and fix it locally' with utility 4.5.",
+      "confidence": 1.0,
+      "details": {
+        "probabilities": {
+          "TEST_FAILURE": 1.0,
+          "DEPENDENCY_FAILURE": 0.0,
+          "DEPLOYMENT_HEALTH_FAILURE": 0.0,
+          "AMBIGUOUS": 0.0,
+          "NO_FAILURE": 0.0
+        },
+        "utility_scores": [
+          {
+            "step": "Compare the failing tests with the recent code change and fix it locally",
+            "fixes": "TEST_FAILURE",
+            "impact": 9,
+            "time_cost": 4,
+            "risk": 0.5,
+            "p_resolves": 1.0,
+            "utility": 4.5
+          },
+          {
+            "step": "Escalate for a full manual investigation",
+            "fixes": "ANY",
+            "impact": 9,
+            "time_cost": 8,
+            "risk": 0.5,
+            "p_resolves": 0.9,
+            "utility": -0.4
+          },
+          {
+            "step": "Approve the release with no changes",
+            "fixes": "NO_FAILURE",
+            "impact": 5,
+            "time_cost": 0,
+            "risk": 1,
+            "p_resolves": 0.0,
+            "utility": -1.0
+          },
+          {
+            "step": "Re-run the flaky test several times in a controlled way",
+            "fixes": "AMBIGUOUS",
+            "impact": 6,
+            "time_cost": 1,
+            "risk": 0.5,
+            "p_resolves": 0.0,
+            "utility": -1.5
+          },
+          {
+            "step": "Pin an available version of the failing package in the requirements file",
+            "fixes": "DEPENDENCY_FAILURE",
+            "impact": 9,
+            "time_cost": 2,
+            "risk": 1,
+            "p_resolves": 0.0,
+            "utility": -3.0
+          },
+          {
+            "step": "Roll back the recent configuration change and re-check the health endpoints",
+            "fixes": "DEPLOYMENT_HEALTH_FAILURE",
+            "impact": 9,
+            "time_cost": 2,
+            "risk": 2,
+            "p_resolves": 0.0,
+            "utility": -4.0
+          }
+        ],
+        "winner": "Compare the failing tests with the recent code change and fix it locally"
+      }
+    },
+    {
+      "agent_name": "Learning Agent",
+      "failure_category": "TEST_FAILURE",
+      "evidence": [
+        "Expected 90.0, received 100.0",
+        "Expected 100.0, received 0.0",
+        "Expected 50.0, received 100.0"
+      ],
+      "likely_cause": "A recent source code change broke the failing unit tests.",
+      "next_step": "Compare the failing tests with the recent code change and fix it locally. Human action required",
+      "verification_checklist": [
+        "Failing tests pass locally.",
+        "Full unit test suite passes in the pipeline.",
+        "No new test failures appear."
+      ],
+      "reasoning": "Detected category TEST_FAILURE. Stored experience for this category: 'Compare the failing tests with the recent code change and fix it locally': 9 of 10 successes (rate 0.83); 'Revert the latest source commit locally and re-run the tests': 7 of 9 successes (rate 0.73). Chose 'Compare the failing tests with the recent code change and fix it locally' because it has the best smoothed success rate (s+1)/(s+f+2). No feedback recorded yet for this category.",
+      "confidence": 0.83,
+      "details": {
+        "experience_counts": {
+          "Compare the failing tests with the recent code change and fix it locally": {
+            "successes": 9,
+            "failures": 1
+          },
+          "Revert the latest source commit locally and re-run the tests": {
+            "successes": 7,
+            "failures": 2
+          }
+        },
+        "success_rates": {
+          "Compare the failing tests with the recent code change and fix it locally": 0.83,
+          "Revert the latest source commit locally and re-run the tests": 0.73
+        },
+        "chosen_action": "Compare the failing tests with the recent code change and fix it locally",
+        "last_update": {
+          "category": "AMBIGUOUS",
+          "action": "Check the flaky test for timing or network dependence",
+          "success": false,
+          "rate_before": 0.58,
+          "rate_after": 0.54
+        }
+      }
+    },
+    {
+      "agent_name": "LLM Agent",
+      "failure_category": "TEST_FAILURE",
+      "evidence": [
+        "\"failed_tests\": [",
+        "\"test_discount_calc\",",
+        "\"test_zero_discount\",",
+        "\"test_max_discount\""
+      ],
+      "likely_cause": "The discount calculation logic in pricing/discount.py has changed, causing specific tests to fail with unexpected values (e.g., expected 90.0 vs received 100.0).",
+      "next_step": "Review the recent code changes and fix the discount calculation logic in pricing/discount.py. Human action required",
+      "verification_checklist": [
+        "Confirm test_discount_calc passes after fixing pricing/discount.py",
+        "Verify no new failures in test_zero_discount or test_max_discount",
+        "Ensure all three failing tests (test_discount_calc, test_zero_discount, test_max_discount) pass with the correct expected values"
+      ],
+      "reasoning": "Called 3 tool(s) (native tool selection): get_pipeline_status, get_test_results, get_recent_change_summary. The unit_tests stage failed with specific test cases failing in pricing/discount.py. The recent change to pricing/discount.py (commit a81c2f4) introduced logic changes that cause these tests to fail consistently (3 out of 50 tests), and the failure did not pass on retry (retry_count=0 for all).",
+      "confidence": 0.9,
+      "details": {
+        "model": "qwen3:4b",
+        "tool_mode": "native",
+        "tool_calls": [
+          {
+            "tool": "get_pipeline_status",
+            "args": {},
+            "output": "{\n  \"pipeline_status\": {\n    \"run_id\": \"run-2026-1108-001\",\n    \"branch\": \"feature/discount-update\",\n    \"stages\": {\n      \"checkout\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 4\n      },\n      \"dependency_install\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 18\n      },\n      \"build\": {\n        \"status\": \"passed\",\n        \"duration_seconds\": 32\n      },\n      \"unit_tests\": {\n        \"status\": \"failed\",\n        \"duration_seconds\": 21\n      },\n      \"deployment\": {\n        \"status\": \"skipped\",\n        \"duration_seconds\": 0\n      }\n    }\n  },\n  \"deployment_health\": {\n    \"overall_status\": \"not_run\",\n    \"checks\": []\n  },\n  \"run_history\": [\n    {\n      \"run_id\": \"run-2026-1107-004\",\n      \"status\": \"passed\",\n      \"failed_tests\": []\n    },\n    {\n      \"run_id\": \"run-2026-1108-001\",\n      \"status\": \"failed\",\n      \"failed_tests\": [\n        \"test_discount_calc\",\n        \"test_zero_discount\",\n        \"test_max_discount\"\n      ]\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "get_test_results",
+            "args": {},
+            "output": "{\n  \"total\": 50,\n  \"passed\": 47,\n  \"failed\": 3,\n  \"failures\": [\n    {\n      \"test_name\": \"test_discount_calc\",\n      \"file\": \"test_discount_calc.py\",\n      \"message\": \"Expected 90.0, received 100.0\",\n      \"retry_count\": 0\n    },\n    {\n      \"test_name\": \"test_zero_discount\",\n      \"file\": \"test_discount_calc.py\",\n      \"message\": \"Expected 100.0, received 0.0\",\n      \"retry_count\": 0\n    },\n    {\n      \"test_name\": \"test_max_discount\",\n      \"file\": \"test_discount_calc.py\",\n      \"message\": \"Expected 50.0, received 100.0\",\n      \"retry_count\": 0\n    }\n  ]\n}",
+            "mode": "native"
+          },
+          {
+            "tool": "get_recent_change_summary",
+            "args": {},
+            "output": "[\n  {\n    \"commit\": \"a81c2f4\",\n    \"files\": [\n      \"pricing/discount.py\"\n    ],\n    \"message\": \"Update discount calculation logic\"\n  },\n  {\n    \"commit\": \"7c9e210\",\n    \"files\": [\n      \"tests/test_discount_calc.py\"\n    ],\n    \"message\": \"Add discount calculation tests\"\n  }\n]",
+            "mode": "native"
+          }
+        ],
+        "tool_call_count": 3,
+        "evidence_lines": [
+          29,
+          30,
+          31,
+          32
+        ]
+      }
+    }
+  ],
+  "evidence_checks": {
+    "Simple Reflex Agent": {
+      "items": [
+        {
+          "evidence": "[2026-11-08 10:14:31] FAILED test_discount_calc.py::test_discount_calc - Expected 90.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-08 10:14:34] FAILED test_discount_calc.py::test_zero_discount - Expected 100.0, received 0.0",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-08 10:14:38] FAILED test_discount_calc.py::test_max_discount - Expected 50.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-08 10:14:45] ERROR 3 tests failed, 47 passed",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-08 10:14:46] ERROR Pipeline stopped after unit test failure",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Model-Based Reflex Agent": {
+      "items": [
+        {
+          "evidence": "test_discount_calc",
+          "found": true
+        },
+        {
+          "evidence": "Expected 90.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "test_zero_discount",
+          "found": true
+        },
+        {
+          "evidence": "Expected 100.0, received 0.0",
+          "found": true
+        },
+        {
+          "evidence": "test_max_discount",
+          "found": true
+        },
+        {
+          "evidence": "Expected 50.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "pricing/discount.py",
+          "found": true
+        },
+        {
+          "evidence": "tests/test_discount_calc.py",
+          "found": true
+        },
+        {
+          "evidence": "run-2026-1107-004",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Goal-Based Agent": {
+      "items": [
+        {
+          "evidence": "Expected 90.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "Expected 100.0, received 0.0",
+          "found": true
+        },
+        {
+          "evidence": "Expected 50.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "pricing/discount.py",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Utility-Based Agent": {
+      "items": [
+        {
+          "evidence": "Expected 90.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "Expected 100.0, received 0.0",
+          "found": true
+        },
+        {
+          "evidence": "Expected 50.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-08 10:14:31] FAILED test_discount_calc.py::test_discount_calc - Expected 90.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-08 10:14:34] FAILED test_discount_calc.py::test_zero_discount - Expected 100.0, received 0.0",
+          "found": true
+        },
+        {
+          "evidence": "[2026-11-08 10:14:38] FAILED test_discount_calc.py::test_max_discount - Expected 50.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "pricing/discount.py",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "Learning Agent": {
+      "items": [
+        {
+          "evidence": "Expected 90.0, received 100.0",
+          "found": true
+        },
+        {
+          "evidence": "Expected 100.0, received 0.0",
+          "found": true
+        },
+        {
+          "evidence": "Expected 50.0, received 100.0",
+          "found": true
+        }
+      ],
+      "verified": true
+    },
+    "LLM Agent": {
+      "items": [
+        {
+          "evidence": "\"failed_tests\": [",
+          "found": true
+        },
+        {
+          "evidence": "\"test_discount_calc\",",
+          "found": true
+        },
+        {
+          "evidence": "\"test_zero_discount\",",
+          "found": true
+        },
+        {
+          "evidence": "\"test_max_discount\"",
+          "found": true
+        }
+      ],
+      "verified": true
+    }
+  }
+}
