@@ -225,6 +225,20 @@ def render_differences(decisions: list[AgentDecision]) -> None:
         st.write("Available agents selected different categories. Their mechanisms weigh current signals, history, cost, and experience differently.")
     else:
         st.write("No completed analysis is available for comparison.")
+
+    # Point-by-point explanation from the shared comparison module: category
+    # disagreements, confidence spread and differing next steps, each tied to
+    # the agent's decision mechanism.
+    explain, explain_note = optional_function("core.comparison", "explain_differences")
+    if explain and available:
+        try:
+            for point in explain(available):
+                st.markdown(point)
+        except Exception as error:
+            st.warning(f"The shared explanation failed: {error}")
+    elif explain_note:
+        st.caption("Detailed explanation unavailable: " + explain_note)
+
     for decision in decisions:
         with st.expander(f"{decision.agent_name}: {decision.failure_category}"):
             st.write(mechanism_for(decision))
