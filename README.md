@@ -350,3 +350,145 @@ Confidence is the smoothed success rate of the chosen action.
 - Shows the counts behind every choice.
 - Learns which action to take; the category itself comes from simple checks.
 - Starts from simulated seed counts, which are replaced by real feedback over time.
+
+---
+
+## 8. LLM Agent
+
+**Implementation:** `agents/llm_agent.py`
+**Model:** a local Qwen3 model served by Ollama (default `qwen3:4b`), called through LangChain (`langchain-ollama`)
+
+The LLM Agent investigates the pipeline the way an engineer would: it decides which information to look at, reads it through tools, and then makes a recommendation that is grounded in what the tools returned. It never changes code or deploys; every recommendation ends with "Human action required".
+
+### Three Steps
+
+1. **Investigate.** The model calls the read-only pipeline tools (section 9).
+   - **Native tool calling** is tried first: the model requests tools through LangChain's tool-calling interface (`bind_tools`), the agent runs them and returns the outputs as tool messages. This repeats for up to 4 rounds.
+   - **Structured tool selection** is used if the model calls fewer than two tools natively. The model then picks one tool at a time, seeing the outputs gathered so far. Its reply is constrained by a JSON schema that only allows tools it has not called yet, and only allows "done" after two tools. The model still chooses every tool; the schema only prevents repeats and stopping too early.
+   - A tool requested twice is not run again, because the tools are read-only and a repeat returns nothing new.
+2. **Assess.** All tool outputs are shown to the model as numbered lines (L1, L2, ...). The model returns a structured assessment whose category is constrained to the five valid categories, and it cites its evidence **by line number**.
+3. **Ground.** The agent copies the cited lines word for word into the decision's evidence. The model chooses the evidence but cannot paraphrase it, so every evidence item is exact text returned by a tool.
+
+### Model Settings
+
+| Setting | Value | Reason |
+|---|---|---|
+| `temperature` / `top_p` / `top_k` | 0.7 / 0.8 / 20 | Qwen3's recommended non-thinking settings; greedy decoding (temperature 0) made the model repeat itself until Ollama aborted |
+| `repeat_penalty` | 1.1 | Discourages repetition loops |
+| `seed` | 42 | Keeps runs repeatable for screenshots and test results |
+| `reasoning` | off | Qwen3's thinking mode is disabled, so answers are direct |
+| `num_ctx` | 4096 | Enough for the prompt and all tool outputs; a larger window was much slower on a laptop |
+| `num_predict` | 1024 | Caps answer length |
+
+The model and context size can be changed with the `OLLAMA_MODEL` and `OLLAMA_NUM_CTX` environment variables.
+
+### Setup
+
+1. Install Ollama from ollama.com and start it.
+2. Pull the model: `ollama pull qwen3:4b` (or `qwen3:8b` on machines with 16 GB RAM or more).
+3. Optional: `export OLLAMA_MODEL=qwen3:8b` to use a different model.
+
+To run the agent on one scenario from the command line:
+
+```bash
+python3 -m scripts.check_llm_agent B
+```
+
+### Decision Output
+
+The agent returns the shared `AgentDecision`. The `details` field contains:
+- `tool_calls`: every tool called, with its arguments and output (shown as the tool-call trace in the UI).
+- `tool_mode`: `native` or `structured`, the investigation path used.
+- `tool_call_count`: number of distinct tools called.
+- `evidence_lines`: the line numbers the model cited.
+- `model`: the Ollama model used.
+
+If Ollama is not running, the model is missing, or no usable assessment is returned, the agent returns a safe `AMBIGUOUS` decision that explains the problem instead of crashing.
+
+### Characteristics
+
+- Reads raw logs and change summaries, so its recommendations name concrete files, packages and errors.
+- Evidence is guaranteed to be exact text from tool outputs.
+- Slower than the classical agents: about 75 to 150 seconds per scenario on a MacBook Air.
+- Results can vary between runs and between models, unlike the deterministic classical agents.
+
+---
+
+## 9. Read-only Pipeline Tools
+
+**Implementation:** `tools/pipeline_tools.py`
+
+The tools give the LLM Agent access to the same scenario data the classical agents receive. `set_scenario()` stores a deep copy of the selected scenario, and each tool returns one part of it.
+
+| Tool | Returns | Scenario fields |
+|---|---|---|
+| `get_pipeline_status()` | Stage results, deployment health checks, recent run history | `pipeline_status`, `deployment_health`, `run_history` |
+| `read_build_logs()` | Raw build and test log text | `build_logs` |
+| `get_test_results()` | Test totals and failed tests, including retry results | `test_results` |
+| `get_recent_change_summary()` | Commits since the last successful run | `recent_changes` |
+| `get_dependency_info()` | Required and resolved package versions and their status | `dependencies` |
+
+The first four are the tools suggested in the assignment. `get_dependency_info()` was added because the problem statement asks the assistant to inspect dependency information, which none of the suggested tools exposes.
+
+**Read-only by design.** No tool writes data, changes code or triggers a deployment, and the deep copy means even a faulty tool could not alter the scenario the other agents use. The expected category is removed by the scenario loader before the tools ever see the data.
+
+---
+
+## 10. Evidence Check
+
+**Implementation:** `core/evidence_check.py`
+
+`check_evidence(decision, scenario)` verifies that every evidence item an agent cites actually appears in the data it received. An item is **grounded** when, after normalising whitespace, it is found in:
+- any value in the scenario (searched recursively, including each line of the build logs), or
+- for the LLM Agent, the output of a tool it called.
+
+It returns the result for each item, the number grounded, the grounded ratio and `all_grounded`. The Streamlit UI shows this as the evidence badge on each agent.
+
+**Results.** In the recorded runs of all five scenarios, every evidence item of all six agents is grounded: 30 of 30 decisions (see `results/comparison_table.md`).
+
+The check confirms that evidence is real, not that it proves the diagnosis; whether a quoted line supports the cause still needs human judgement.
+
+---
+
+## 11. Comparison and Why Decisions Differ
+
+**Implementation:** `core/comparison.py`
+**Full results:** `results/comparison_table.md` (generated by `python3 -m scripts.build_comparison_report`)
+
+| Function | Purpose |
+|---|---|
+| `build_table(decisions, scenario)` | One row per agent: category, confidence, next step, evidence count, evidence grounded |
+| `agreement_summary(decisions)` | How many agents agree on the most common category, and which agents differ |
+| `explain_differences(decisions)` | Point-by-point explanation of category disagreements, the confidence spread and differing next steps, each tied to the agent's mechanism |
+| `to_markdown(...)` / `to_csv(...)` | Exports for the results file and the UI download buttons |
+
+The "Why decisions differ" section of the UI shows the output of `explain_differences()` for the selected scenario.
+
+### Findings
+
+All six agents chose the expected category in all five scenarios (30 of 30). Because each scenario contains clear signals, the agents' mechanisms show up in the other parts of the decision:
+
+1. **Confidence.** Rule-based agents report a fixed confidence per rule, the Utility-Based Agent reports the probability of the winning category, the Learning Agent reports the past success rate of its chosen action, and the LLM gives its own estimate. In the ambiguous scenario E confidence ranges from 0.56 (Learning) to 0.90 (Goal-Based).
+2. **Next step.** In scenario C the Utility-Based and Learning agents recommend rolling back the configuration change, while the other agents recommend investigating first, because utility and past success favour the cheap rollback.
+3. **Specificity.** The classical agents recommend general actions; the LLM Agent names concrete files and errors, such as `pricing/discount.py` in scenario A and `numpy==3.0.1` in scenario B.
+
+---
+
+## 12. LLM Agent: Limitations and Testing Findings
+
+These findings come from running the LLM Agent on all five scenarios during development.
+
+- **Greedy decoding failed.** At temperature 0, Qwen3 repeated itself until Ollama aborted the request ("token repeat limit reached"). Qwen3's recommended sampling settings with a fixed seed fixed this.
+- **Native tool calling is not always used.** In the recorded runs the model used native tool calls in scenarios A, C and D, but answered without tools in B and E, where the structured tool selection took over. Without this fallback, the model once answered with invented evidence after calling no tools.
+- **Category definitions matter.** Before the definitions were made precise, the model labelled the flaky test in scenario E as `TEST_FAILURE`. Defining `TEST_FAILURE` as failing consistently, and stating that a test which passed on retry is `AMBIGUOUS`, fixed this.
+- **Unsupported links.** In scenario E the model's recommendation mentions the recent documentation change, although nothing in the evidence connects it to the timeout. Small local models can add plausible but unsupported reasoning; the evidence check confirms quotations, not reasoning.
+- **Evidence readability.** Line-number citation guarantees exact evidence, but the model sometimes cites JSON field lines (for example `"status_code": 503,`) rather than full log lines.
+- **Speed.** Each scenario takes about 75 to 150 seconds on a MacBook Air, so the UI keeps results per scenario instead of re-running the model on every interaction.
+- **Model size.** `qwen3:4b` was used to run on a laptop; a larger model would likely use native tool calling more reliably.
+
+### Tests
+
+- `tests/test_llm_agent.py`: native tool calling, structured fallback, no duplicate tools, line-cited evidence, unusable answers and an unreachable model, using a scripted fake model so the tests run without Ollama. A live test with the real model runs with `RUN_LLM_TESTS=1`.
+- `tests/test_pipeline_tools.py`: each tool returns the right data, the tools are read-only and never expose the expected category.
+- `tests/test_evidence_check.py`: all classical agents' evidence is grounded in all scenarios; invented evidence is rejected.
+- `tests/test_comparison.py`: table, agreement summary, explanation and exports.
