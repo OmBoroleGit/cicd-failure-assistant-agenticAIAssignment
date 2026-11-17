@@ -474,7 +474,52 @@ All six agents chose the expected category in all five scenarios (30 of 30). Bec
 
 ---
 
-## 12. LLM Agent: Limitations and Testing Findings
+## 12. Classical Agents: Limitations
+
+These limitations apply to the five classical agents. The LLM Agent's limitations are in section 13.
+
+### Data and Testing
+
+- **Small, hand-written scenarios.** The agents were built and tested on the five scenarios in `data/scenarios/`. The rules, goals and signals were written with these scenarios in mind, so all five classical agents classify every scenario correctly. This does not show how they would perform on real pipelines.
+- **Simulated experience data.** The starting counts in `data/experience_seed.json` were made up so that the Learning Agent has history on its first run. They are not real troubleshooting outcomes. Feedback recorded during the demo is also simulated.
+
+### Rules Only Cover Known Patterns
+
+- **Unknown failures are misread.** The agents only know the five categories they were written for. In a check with a copy of scenario D where an extra `security_scan` stage failed, the Simple Reflex Agent reported `TEST_FAILURE` (0.95), and the Model-Based Reflex and Learning agents reported `NO_FAILURE` (0.95 and 0.92). Only the Goal-Based and Utility-Based agents fell back to `AMBIGUOUS` with a manual investigation (0.3).
+- **The agents do not share the same rules.** The Simple Reflex Agent treats a `deprecated` package as a dependency failure, while the other agents only treat `not_found` and `conflict` that way. In a copy of scenario D with one deprecated package, the Simple Reflex Agent reported `DEPENDENCY_FAILURE` (0.95) for what is only a warning; the other four reported `NO_FAILURE`.
+- **Fixed priority order.** When signals point to more than one category, the order of the checks decides. The reflex and learning agents check dependencies first, and the Goal-Based Agent takes the first goal in its fixed list that the facts satisfy.
+- **Exact log wording.** Some checks and evidence depend on exact phrases such as "No matching distribution". A real tool that prints a different message could be missed.
+
+### Hand-set Values and Fixed Confidence
+
+- **Hand-set utility weights.** Impact, time cost and risk (0–10) for each candidate step were chosen by the team, not measured. The escalation step's success chance is fixed at 0.9. Different values can change which step wins.
+- **Simple probabilities.** The Utility-Based Agent's P is the share of evidence signals for each category. Every signal counts the same, so a clear error message weighs as much as a weak hint.
+- **Shortest plan, not cheapest.** The Goal-Based Agent's breadth-first search counts steps. All diagnostic actions are treated as equal effort.
+- **Fixed confidence values.** Several confidence values are set by hand, not measured from how often the agent is right:
+
+| Agent | Confidence |
+|---|---|
+| Simple Reflex | 0.95 for most rules, 0.70 for the flaky-test rule |
+| Model-Based Reflex | 0.95, or 0.70 for `AMBIGUOUS` |
+| Goal-Based | 0.90 whenever a goal is reached, 0.30 when none is |
+| Utility-Based | Probability of the winning category, or 0.30 when escalation wins |
+
+Confidence values from different agents should therefore not be compared as real probabilities. The unknown-failure check above shows the risk: agents can be wrong while reporting 0.92 or more.
+
+### Learning Agent
+
+- **Learns the action, not the category.** The category comes from fixed checks. Feedback cannot correct a wrong category.
+- **Fixed list of actions.** The agent only chooses among the actions stored for each category. It cannot discover a new action.
+- **Small numbers swing the choice.** Four "did not work" updates are enough to switch the recommendation in scenario E (rate 0.78 to 0.54). Smoothing reduces this, but the counts are still small.
+- **No context or recency.** Every past outcome counts the same, however old, and the same counts are used for every project and pipeline.
+
+### Evidence Check
+
+- **Quotes, not conclusions.** The evidence check confirms that every evidence string exists in the scenario data. It does not confirm that the evidence supports the agent's conclusion.
+
+---
+
+## 13. LLM Agent: Limitations and Testing Findings
 
 These findings come from running the LLM Agent on all five scenarios during development.
 
