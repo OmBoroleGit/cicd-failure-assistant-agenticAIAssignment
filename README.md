@@ -1,3 +1,130 @@
+# Intelligent CI/CD Pipeline Failure Assistant
+
+A Python diagnostic assistant that analyses CI/CD pipeline failures and recommends evidence-based next steps. Six agents (Simple Reflex, Model-Based Reflex, Goal-Based, Utility-Based, Learning and a local LLM agent) analyse the same scenario and return a structured decision, so their approaches can be compared side by side in a Streamlit app.
+
+**Read-only by design:** the agents never change code or deploy. Every recommendation ends with "Human action required".
+
+## Contents
+
+1. [Project overview](#project-overview)
+2. [Installation](#installation)
+3. [Running the project](#running-the-project)
+4. [Screenshots](#screenshots)
+5. [Results and test evidence](#results-and-test-evidence)
+6. [Project structure](#project-structure)
+7. [Design documentation (sections 1–13)](#1-system-architecture)
+
+---
+
+## Project overview
+
+- **Input:** five hand-written pipeline scenarios (A–E) in `data/scenarios/`: unit-test failure, dependency failure, deployment health failure, a healthy run and an ambiguous flaky-test run.
+- **Output:** one `AgentDecision` per agent with category, evidence, likely cause, next step, verification checklist, reasoning and confidence.
+- **Comparison:** the UI and `results/comparison_table.md` show where the agents agree and why their next steps differ.
+- **Evidence check:** every evidence item an agent cites is verified to exist in the data it received.
+- **Learning feedback:** the Learning Agent updates its action counts from "worked / did not work" feedback.
+
+## Installation
+
+Requirements: Python 3 (developed on 3.13) and [Ollama](https://ollama.com) for the LLM Agent. The five classical agents need no model.
+
+```bash
+# 1. Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Install and start Ollama (ollama.com), then pull the model
+ollama serve                       # skip if the Ollama app is already running
+ollama pull qwen3:4b               # or qwen3:8b on machines with 16 GB RAM or more
+```
+
+Optional settings: `export OLLAMA_MODEL=qwen3:8b` and `export OLLAMA_NUM_CTX=4096`.
+
+## Running the project
+
+| Task | Command |
+|---|---|
+| Start the Streamlit app | `streamlit run app.py` |
+| Run the LLM Agent on one scenario (A–E) | `python3 -m scripts.check_llm_agent B` |
+| Rebuild the comparison report | `python3 -m scripts.build_comparison_report` |
+| Run the tests | `python3 -m pytest` |
+| Run the tests and save the output | `python3 -m pytest -v \| tee results/pytest_output.txt` |
+| Include the live LLM test (needs Ollama) | `RUN_LLM_TESTS=1 python3 -m pytest` |
+
+In the app: choose a scenario, click **Run / rerun all six agents** (the LLM Agent takes about 75–150 seconds per scenario on a laptop), then review the comparison table, each agent's decision, the LLM tool-call trace and the Learning Agent feedback buttons. To reset the Learning Agent to its starting counts, copy `data/experience_seed.json` over `data/experience.json` (or call `LearningAgent().reset_experience()`).
+
+## Screenshots
+
+The Streamlit app, one screenshot per scenario (files in `screenshots/`).
+
+**Scenario A: Unit tests fail after a code change** (`TEST_FAILURE`). The app while the six agents are running.
+
+![Scenario A: app while the agents run](screenshots/Scenario%20A.png)
+
+**Scenario B: Dependency installation failure** (`DEPENDENCY_FAILURE`). All six agents agree.
+
+![Scenario B: dependency failure, 6/6 agreement](screenshots/Scenario%20B.png)
+
+**Scenario C: Deployment health check failure** (`DEPLOYMENT_HEALTH_FAILURE`).
+
+![Scenario C: deployment health failure](screenshots/Scenario%20C.png)
+
+**Scenario D: Healthy pipeline** (`NO_FAILURE`).
+
+![Scenario D: healthy pipeline](screenshots/Scenario%20D.png)
+
+**Scenario E: Ambiguous run with a flaky test** (`AMBIGUOUS`). Confidence varies most here (56% to 90%).
+
+![Scenario E: ambiguous flaky test, agent comparison table](screenshots/Scenario%20E.png)
+
+### LLM tool-call trace and Learning Agent feedback
+
+These two views are shown in the app below the comparison table. Their content is also saved as text so it can be checked without running the UI:
+
+- **LLM tool-call trace:** [`results/llm_tool_trace.md`](results/llm_tool_trace.md) lists, for every scenario, the tools the LLM Agent called in order, the tool mode (native or structured), a preview of each tool output and the exact evidence lines it cited. Example (scenario B): `get_pipeline_status` → `get_dependency_info` → `read_build_logs` → `get_recent_change_summary` → `get_test_results`, then evidence lines about `numpy==3.0.1`.
+- **Learning Agent feedback:** [`results/learning_feedback_demo.txt`](results/learning_feedback_demo.txt) shows scenario E before and after four "did not work" updates: the chosen action switches from "Check the flaky test for timing or network dependence" (rate 0.78) to "Re-run the flaky test several times in a controlled way" (0.56).
+
+## Results and test evidence
+
+| Artifact | What it contains |
+|---|---|
+| `results/decisions_A.json` … `decisions_E.json` | Recorded decisions of all six agents per scenario, with evidence checks |
+| `results/comparison_table.md` | Category, confidence, next step and evidence grounding for every agent and scenario; **30 of 30** decisions correct and grounded |
+| `results/pytest_output.txt` | Output of the pytest run (see the header of the file for what was included) |
+| `results/llm_tool_trace.md` | LLM Agent tool-call traces from the recorded runs |
+| `results/learning_feedback_demo.txt` | Learning Agent before/after feedback demo |
+| `results/llm_validation.json` | Validation record of the LLM Agent runs |
+
+**Three scenario test results.** The assignment asks for three scenario results; all five are recorded. The core three are:
+
+| Scenario | Expected | All six agents returned | Evidence grounded |
+|---|---|---|---|
+| A (test failure) | `TEST_FAILURE` | `TEST_FAILURE` | 6 of 6 agents |
+| B (dependency failure) | `DEPENDENCY_FAILURE` | `DEPENDENCY_FAILURE` | 6 of 6 agents |
+| E (ambiguous / flaky) | `AMBIGUOUS` | `AMBIGUOUS` | 6 of 6 agents |
+
+Scenarios C and D give the same result (see `results/comparison_table.md`).
+
+## Project structure
+
+```
+app.py                  Streamlit UI
+agents/                 Six agents + base class
+core/                   Scenario loader, schema, runner, evidence check, comparison
+tools/pipeline_tools.py Read-only tools used by the LLM Agent
+data/scenarios/         Scenarios A–E (JSON)
+data/experience*.json   Learning Agent counts (live file and seed copy)
+scripts/                check_llm_agent.py, build_comparison_report.py
+tests/                  pytest suite
+results/                Recorded decisions, comparison report, test evidence
+screenshots/            UI screenshots
+```
+
+---
+
 ## 1. System Architecture
 
 The Intelligent CI/CD Pipeline Failure Assistant is a Python-based diagnostic system designed to analyse CI/CD pipeline failures and provide evidence-based recommendations.
@@ -153,7 +280,36 @@ The agent applies rules using both current and historical information:
 1. **Dependency History Rule:** Detects dependency-related problems using package status and dependency configuration.
 2. **Deployment History Rule:** Identifies unhealthy deployment checks.
 3. **Flaky History Rule:** Identifies intermittent or repeated failures and unstable runs.
-4. **
+4. **Test Failure Rule:** Identifies an ordinary unit test failure when tests failed or the `unit_tests` stage failed, and no earlier rule applied. Evidence is the failing test names and messages, the recently changed files and the last successful run.
+5. **No Failure Rule:** If no rule fires, the agent reports a healthy pipeline using the stage statuses and the overall deployment health as evidence.
+
+The rules run in a fixed order, so dependency problems take priority over deployment problems, deployment problems over flaky behaviour, and flaky behaviour over an ordinary test failure. The flaky rule is checked before the test failure rule so that a test that passed on retry is not reported as a consistent failure.
+
+### Decision Output
+
+The agent returns:
+- Predicted failure category.
+- Evidence taken from the scenario (changed files, failing tests, error log lines, health checks).
+- Likely cause, recommended next step and verification checklist.
+- Reasoning that includes the last successful run, changed files, historical failed tests and flaky tests.
+- Confidence of `0.95`, or `0.70` for `AMBIGUOUS`.
+- In `details`: the full `internal_state` and the `rule_fired` identifier (`DEPENDENCY_HISTORY_RULE`, `DEPLOYMENT_HISTORY_RULE`, `FLAKY_HISTORY_RULE`, `TEST_HISTORY_RULE` or `NO_FAILURE_RULE`).
+
+### Characteristics
+
+- Keeps an internal state built from current observations, recent changes and run history.
+- Can recognise intermittent behaviour from history, such as repeated failures or unstable runs.
+- Deterministic and explainable: the rule fired and the state it used are both returned.
+- Still rule-based, so it cannot learn or weigh alternative actions.
+
+### Limitations
+
+- The state is rebuilt from the scenario on every call; the agent does not remember earlier decisions.
+- Rules cover only the five known categories, and the fixed order decides when signals overlap.
+- Confidence values are fixed by hand, not measured (see section 12).
+
+---
+
 ## 5. Goal-Based Agent
 
 **Implementation:** `agents/goal_based.py`

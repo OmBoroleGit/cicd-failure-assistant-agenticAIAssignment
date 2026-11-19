@@ -1,0 +1,24 @@
+Learning Agent feedback demo (scenario E)
+Run on a temporary copy of data/experience_seed.json; data/experience.json was not touched.
+
+BEFORE feedback (seed counts):
+  chosen: Check the flaky test for timing or network dependence  (confidence 0.78)
+    0.78  Check the flaky test for timing or network dependence  {'successes': 6, 'failures': 1}
+    0.56  Re-run the flaky test several times in a controlled way  {'successes': 4, 'failures': 3}
+    0.50  Quarantine the flaky test and open a ticket  {'successes': 2, 'failures': 2}
+
+feedback 1: 'Check the flaky test for timing or network dependence' -> did not work
+
+feedback 2: 'Check the flaky test for timing or network dependence' -> did not work
+
+feedback 3: 'Check the flaky test for timing or network dependence' -> did not work
+
+feedback 4: 'Check the flaky test for timing or network dependence' -> did not work
+
+AFTER 4 'did not work' updates:
+  chosen: Re-run the flaky test several times in a controlled way  (confidence 0.56)
+    0.54  Check the flaky test for timing or network dependence  {'successes': 6, 'failures': 5}
+    0.56  Re-run the flaky test several times in a controlled way  {'successes': 4, 'failures': 3}
+    0.50  Quarantine the flaky test and open a ticket  {'successes': 2, 'failures': 2}
+
+last_update: {'category': 'AMBIGUOUS', 'action': 'Check the flaky test for timing or network dependence', 'success': False, 'rate_before': 0.58, 'rate_after': 0.54}

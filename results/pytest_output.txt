@@ -1,0 +1,50 @@
+# pytest output
+# Generated: 2026-11-19T11:13Z in a sandbox without langchain / streamlit / network (pip installs were blocked).
+# INCLUDED: test_classical_agents, test_comparison, test_evidence_check, test_schema.
+# NOT RUN HERE (need langchain-core): test_llm_agent, test_pipeline_tools, test_runner.
+# To replace with the full-suite result on a clean install:  python3 -m pytest -v | tee results/pytest_output.txt
+
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/claude/proj/cicd-failure-assistant-agenticAIAssignment-main
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 28 items
+
+tests/test_classical_agents.py::TestClassicalAgents::test_agents_classify_all_scenarios_correctly 
+tests/test_classical_agents.py::TestClassicalAgents::test_agents_classify_all_scenarios_correctly PASSED [  3%]
+tests/test_classical_agents.py::TestClassicalAgents::test_agents_return_valid_decision_structure 
+tests/test_classical_agents.py::TestClassicalAgents::test_agents_return_valid_decision_structure PASSED [  7%]
+tests/test_classical_agents.py::TestClassicalAgents::test_confidence_is_within_valid_range 
+tests/test_classical_agents.py::TestClassicalAgents::test_confidence_is_within_valid_range PASSED [ 10%]
+tests/test_classical_agents.py::TestClassicalAgents::test_expected_category_is_hidden_from_agents PASSED [ 14%]
+tests/test_classical_agents.py::TestClassicalAgents::test_recommendations_require_human_action 
+tests/test_classical_agents.py::TestClassicalAgents::test_recommendations_require_human_action PASSED [ 17%]
+tests/test_classical_agents.py::TestGoalBasedAgent::test_plan_starts_with_pipeline_check 
+tests/test_classical_agents.py::TestGoalBasedAgent::test_plan_starts_with_pipeline_check PASSED [ 21%]
+tests/test_classical_agents.py::TestGoalBasedAgent::test_scenario_e_plan_reviews_run_history PASSED [ 25%]
+tests/test_classical_agents.py::TestUtilityBasedAgent::test_every_candidate_step_is_scored PASSED [ 28%]
+tests/test_classical_agents.py::TestUtilityBasedAgent::test_winner_has_highest_utility 
+tests/test_classical_agents.py::TestUtilityBasedAgent::test_winner_has_highest_utility PASSED [ 32%]
+tests/test_classical_agents.py::TestLearningAgent::test_negative_feedback_changes_the_choice PASSED [ 35%]
+tests/test_classical_agents.py::TestLearningAgent::test_reset_restores_seed_counts PASSED [ 39%]
+tests/test_classical_agents.py::TestLearningAgent::test_update_is_saved_to_disk PASSED [ 42%]
+tests/test_comparison.py::TestComparison::test_agreement_summary_names_the_dissenter PASSED [ 46%]
+tests/test_comparison.py::TestComparison::test_explanation_covers_category_confidence_and_steps PASSED [ 50%]
+tests/test_comparison.py::TestComparison::test_exports_include_every_agent PASSED [ 53%]
+tests/test_comparison.py::TestComparison::test_table_has_one_row_per_agent_with_grounding PASSED [ 57%]
+tests/test_evidence_check.py::TestEvidenceCheck::test_classical_agents_cite_only_grounded_evidence 
+tests/test_evidence_check.py::TestEvidenceCheck::test_classical_agents_cite_only_grounded_evidence PASSED [ 60%]
+tests/test_evidence_check.py::TestEvidenceCheck::test_invented_evidence_is_not_grounded PASSED [ 64%]
+tests/test_evidence_check.py::TestEvidenceCheck::test_log_line_is_grounded PASSED [ 67%]
+tests/test_evidence_check.py::TestEvidenceCheck::test_mixed_evidence_gives_partial_ratio PASSED [ 71%]
+tests/test_evidence_check.py::TestEvidenceCheck::test_no_evidence_is_not_all_grounded PASSED [ 75%]
+tests/test_evidence_check.py::TestEvidenceCheck::test_tool_output_lines_count_as_sources PASSED [ 78%]
+tests/test_schema.py::TestAgentDecision::test_confidence_value PASSED    [ 82%]
+tests/test_schema.py::TestAgentDecision::test_decision_creation PASSED   [ 85%]
+tests/test_schema.py::TestAgentDecision::test_details_defaults_to_empty_dictionary PASSED [ 89%]
+tests/test_schema.py::TestAgentDecision::test_required_fields_are_present PASSED [ 92%]
+tests/test_schema.py::TestAgentDecision::test_to_dict_preserves_evidence_and_checklist PASSED [ 96%]
+tests/test_schema.py::TestAgentDecision::test_to_dict_returns_dictionary PASSED [100%]
+
+=================== 28 passed, 135 subtests passed in 0.37s ====================
