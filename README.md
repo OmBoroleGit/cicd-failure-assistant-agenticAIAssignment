@@ -60,9 +60,9 @@ In the app: choose a scenario, click **Run / rerun all six agents** (the LLM Age
 
 The Streamlit app, one screenshot per scenario (files in `screenshots/`).
 
-**Scenario A: Unit tests fail after a code change** (`TEST_FAILURE`). The app while the six agents are running.
+**Scenario A: Unit tests fail after a code change** (`TEST_FAILURE`). All six agents agree.
 
-![Scenario A: app while the agents run](screenshots/Scenario%20A.png)
+![Scenario A: unit test failure, 6/6 agreement](screenshots/Scenario%20A.png)
 
 **Scenario B: Dependency installation failure** (`DEPENDENCY_FAILURE`). All six agents agree.
 
@@ -76,11 +76,15 @@ The Streamlit app, one screenshot per scenario (files in `screenshots/`).
 
 ![Scenario D: healthy pipeline](screenshots/Scenario%20D.png)
 
-**Scenario E: Ambiguous run with a flaky test** (`AMBIGUOUS`). Confidence varies most here (56% to 90%).
+**Scenario E: Ambiguous run with a flaky test** (`AMBIGUOUS`). Confidence varies most here (67% to 90%).
 
 ![Scenario E: ambiguous flaky test, agent comparison table](screenshots/Scenario%20E.png)
 
 ### LLM tool-call trace and Learning Agent feedback
+
+![LLM tool-call trace for scenario E](screenshots/LLM%20trace.png)
+
+![Learning Agent feedback section with starting counts](screenshots/Learning%20feedback.png)
 
 These two views are shown in the app below the comparison table. Their content is also saved as text so it can be checked without running the UI:
 
