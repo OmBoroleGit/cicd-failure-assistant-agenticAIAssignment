@@ -1,7 +1,10 @@
-"""Build results/comparison_table.md from the recorded runs in results/decisions_*.json.
+"""Build results/comparison_table.md.
 
-The recorded runs are used instead of re-running the agents, so the report
-matches the screenshots and validation results exactly and needs no LLM.
+The five classical agents are deterministic, so they are re-run on every
+scenario: their decisions always match the current code and the current
+Learning Agent experience file. The LLM Agent's decisions are taken from the
+recorded runs in results/decisions_*.json, because each LLM run takes one to
+two minutes and its output can vary between runs.
 
 Usage:
     python3 -m scripts.build_comparison_report
@@ -10,7 +13,12 @@ Usage:
 import json
 from pathlib import Path
 
-from core.comparison import agreement_summary, to_markdown
+from agents.goal_based import GoalBasedAgent
+from agents.learning_agent import LearningAgent
+from agents.model_based_reflex import ModelBasedReflexAgent
+from agents.simple_reflex import SimpleReflexAgent
+from agents.utility_based import UtilityBasedAgent
+from core.comparison import to_markdown
 from core.evidence_check import check_evidence
 from core.scenario_loader import load_scenario
 from core.schema import AgentDecision
@@ -54,39 +62,63 @@ ANALYSIS = {
         "(Simple Reflex) or checking production monitoring (LLM)."
     ),
     "E": (
-        "This is the scenario designed to separate the agents. All six classify it as AMBIGUOUS, but "
-        "confidence varies most here, from 0.56 to 0.90. The Simple Reflex Agent reacts to the retry "
-        "status in the current run (FLAKY_TEST_RULE); the Model-Based Reflex Agent additionally uses "
-        "the test's failure history; both report lower confidence (0.70) than in the clear-cut scenarios "
-        "(0.95) because their flaky-test rules carry less certainty. The Goal-Based Agent reports 0.90, "
-        "as in every scenario, because its plan still reached the goal once the retry evidence was found. The Utility-Based Agent's 0.67 is the "
-        "probability of the ambiguous category (two of three signals). The Learning Agent is least "
-        "confident (0.56) because the three flaky-test actions have similar past success rates "
-        "(0.50 to 0.56), so its experience gives only a weak preference. The LLM Agent cites "
-        "`\"retry_passed\": true` as evidence, but its recommendation also mentions the recent "
-        "documentation change, which the evidence does not link to the timeout; this is a known "
-        "limitation of small local models."
+        "This is the scenario designed to separate the agents. All six classify it as AMBIGUOUS, and "
+        "confidence is lower here than in any other scenario (0.67 to 0.90). The Simple Reflex Agent "
+        "reacts to the retry status in the current run (FLAKY_TEST_RULE); the Model-Based Reflex Agent "
+        "additionally uses the test's failure history; both report 0.70 instead of the 0.95 they give "
+        "in the clear-cut scenarios, because their flaky-test rules carry less certainty. The "
+        "Goal-Based Agent reports 0.90, as in every scenario, because its plan still reached the goal "
+        "once the retry evidence was found. The Utility-Based Agent is least confident (0.67): that is "
+        "the probability of the ambiguous category, since two of the three evidence signals point to "
+        "it and one points to a test failure. The Learning Agent reports 0.78 and recommends checking "
+        "the flaky test for timing or network dependence, because that action has the best past "
+        "success rate (6 successes out of 7 in the seed data); after four 'did not work' updates it "
+        "switches to re-running the test (see `results/learning_feedback_demo.txt`). In the recorded "
+        "run the LLM Agent cites `\"retry_passed\": true` as evidence, but its recommendation also "
+        "mentions the recent documentation change, which the evidence does not link to the timeout; "
+        "this is a known limitation of small local models."
     ),
 }
 
 
-def load_recorded(scenario_id: str) -> list[AgentDecision]:
+CLASSICAL_AGENTS = [
+    SimpleReflexAgent,
+    ModelBasedReflexAgent,
+    GoalBasedAgent,
+    UtilityBasedAgent,
+    LearningAgent,
+]
+
+
+def recorded_llm_decision(scenario_id: str) -> AgentDecision:
     data = json.loads((RESULTS / f"decisions_{scenario_id}.json").read_text())
-    return [AgentDecision(**item) for item in data["decisions"]]
+    for item in data["decisions"]:
+        if item["agent_name"] == "LLM Agent":
+            return AgentDecision(**item)
+    raise ValueError(f"No recorded LLM Agent decision for scenario {scenario_id}")
+
+
+def decisions_for(scenario_id: str, scenario: dict) -> list[AgentDecision]:
+    """Fresh classical decisions plus the recorded LLM decision, in UI order."""
+    decisions = [agent().decide(scenario) for agent in CLASSICAL_AGENTS]
+    decisions.append(recorded_llm_decision(scenario_id))
+    return decisions
 
 
 def main() -> None:
     runs = {}
     for scenario_id in SCENARIOS:
         scenario, expected = load_scenario(scenario_id)
-        runs[scenario_id] = (scenario, expected, load_recorded(scenario_id))
+        runs[scenario_id] = (scenario, expected, decisions_for(scenario_id, scenario))
 
     agents = [d.agent_name for d in runs["A"][2]]
     lines = [
         "# Comparison of Agent Decisions",
         "",
-        "Generated by `scripts/build_comparison_report.py` from the recorded runs in "
-        "`results/decisions_*.json`. All six agents received the same scenario data in every run.",
+        "Generated by `scripts/build_comparison_report.py`. The five classical agents are "
+        "deterministic and are re-run on the current code and experience data; the LLM Agent's "
+        "decisions come from the recorded runs in `results/decisions_*.json`. All six agents "
+        "received the same scenario data.",
         "",
         "## Summary: category per agent and scenario",
         "",
@@ -107,6 +139,9 @@ def main() -> None:
             cells.append(f"{decision.failure_category} {'✓' if ok else '✗'}")
         lines.append(f"| {agent} | " + " | ".join(cells) + " |")
 
+    scores_e = [d.confidence for d in runs["E"][2] if d.confidence is not None]
+    low_e, high_e = min(scores_e), max(scores_e)
+
     lines += [
         "",
         f"- Correct categories: **{correct} of {total}** decisions.",
@@ -120,8 +155,8 @@ def main() -> None:
         "",
         "1. **Confidence.** Rule-based agents report fixed confidence per rule, the Utility-Based Agent "
         "reports the probability of the winning category, the Learning Agent reports the past success "
-        "rate of its chosen action, and the LLM reports its own estimate. The spread is widest in the "
-        "ambiguous scenario E (0.56 to 0.90).",
+        "rate of its chosen action, and the LLM reports its own estimate. Confidence is lowest in the "
+        f"ambiguous scenario E ({low_e:.2f} to {high_e:.2f}), where the evidence is mixed.",
         "2. **Recommended next step.** Each mechanism ranks actions differently: rules map to a fixed "
         "action, the Goal-Based Agent follows its plan, the Utility-Based Agent trades benefit against "
         "cost and risk, and the Learning Agent follows past outcomes. This is clearest in scenario C, "
